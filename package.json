@@ -1,0 +1,29 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "## Tech Stack / Modules",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "tsc -w",
+        "dev": "nodemon dist/index.js",
+        "start": "node dist/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ProdevRecipeFinder/BackEnd.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/ProdevRecipeFinder/BackEnd/issues"
+    },
+    "homepage": "https://github.com/ProdevRecipeFinder/BackEnd#readme",
+    "devDependencies": {
+        "@types/node": "^17.0.23",
+        "nodemon": "^2.0.15",
+        "ts-node": "^10.7.0",
+        "typescript": "^4.6.3"
+    }
+}
