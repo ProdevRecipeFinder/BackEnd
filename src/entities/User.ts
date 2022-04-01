@@ -1,5 +1,7 @@
 import { ObjectType, Field } from "type-graphql";
 import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { RecipeAuthors } from "./joinTables/RecipeAuthor";
+import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
 
 @ObjectType()
 @Entity()
@@ -27,4 +29,10 @@ export class User extends BaseEntity {
     @Field()
     @UpdateDateColumn()
     updated_at: Date;
+
+    @OneToMany(() => UserSavedRecipes, ur => ur.user)
+    recipeConnection: Promise<UserSavedRecipes[]>;
+
+    @OneToMany(() => RecipeAuthors, ra => ra.user)
+    ownRecipeConnection: Promise<RecipeAuthors[]>
 }

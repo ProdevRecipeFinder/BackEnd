@@ -1,5 +1,6 @@
 import { ObjectType, Field } from "type-graphql";
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { RecipeTags } from "./joinTables/RecipeTag";
 
 @ObjectType()
 @Entity()
@@ -17,4 +18,6 @@ export class Tag extends BaseEntity {
     @Column({ nullable: true })
     tag_desc?: string;
 
+    @OneToMany(() => RecipeTags, rt => rt.tag)
+    recipeTagConnection: Promise<RecipeTags[]>
 }

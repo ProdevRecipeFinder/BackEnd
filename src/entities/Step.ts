@@ -1,5 +1,6 @@
 import { ObjectType, Field } from "type-graphql";
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { RecipeSteps } from "./joinTables/RecipeStep";
 
 @ObjectType()
 @Entity()
@@ -16,5 +17,8 @@ export class Step extends BaseEntity {
     @Field(() => String)
     @Column({ nullable: true })
     step_desc?: string;
+
+    @OneToMany(() => RecipeSteps, rs => rs.step)
+    recipeStepConnection: Promise<RecipeSteps[]>;
 
 }
