@@ -3,7 +3,7 @@ import { Recipe } from "../Recipe";
 import { Tag } from "../Tag";
 
 @Entity()
-export class RecipeTags extends BaseEntity {
+export class RecipeTag extends BaseEntity {
     @PrimaryColumn()
     recipe_id!: number;
 

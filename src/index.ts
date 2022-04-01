@@ -1,11 +1,20 @@
+import { ApolloServerPluginLandingPageDisabled, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
+import { ApolloServer } from "apollo-server-express";
+import cors from "cors";
+import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
-import cors from "cors";
-import "dotenv/config";
+import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
-import typeormConfig from "./typeorm-config";
 import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
+import { TestResolver } from "./resolvers/TestResolver";
+import typeormConfig from "./typeorm-config";
+import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
+import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
+import { RecipeLoader } from './utils/dataLoaders/recipeLoader';
+import { StepsLoader } from './utils/dataLoaders/stepLoader';
+import { TagsLoader } from './utils/dataLoaders/tagsLoader';
 
 
 const main = async () => {
@@ -52,7 +61,39 @@ const main = async () => {
         })
     );
 
+    //Apollo GraphQL endpoint setup with request resolvers
+    const apolloServer = new ApolloServer({
+        plugins: [ // GraphQL old playground enabled in development only
+            __prod__ ?
+                ApolloServerPluginLandingPageDisabled() :
+                ApolloServerPluginLandingPageGraphQLPlayground()
+        ],
+        schema: await buildSchema({
+            resolvers: [
+                TestResolver,
 
+            ],
+            validate: false,
+        }),
+        //Context object accessible on GraphQL queries/mutations
+        //Loaders for eliminating n+1 problem
+        context: ({ req, res }) => ({
+            req,
+            res,
+            recipeLoader: RecipeLoader(),
+            authorLoader: AuthorsLoader(),
+            ingredientLoader: IngredientsLoader(),
+            stepLoader: StepsLoader(),
+            tagsLoader: TagsLoader()
+        })
+    });
+
+    await apolloServer.start();
+    //Listen to GraphQL via express server
+    apolloServer.applyMiddleware({
+        app,
+        cors: false,
+    });
 
 
 

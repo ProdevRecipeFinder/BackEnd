@@ -1,10 +1,15 @@
-import { ObjectType, Field } from "type-graphql";
+import { ObjectType, Field, Ctx } from "type-graphql";
 import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
-import { RecipeAuthors } from "./joinTables/RecipeAuthor";
-import { RecipeIngredients } from "./joinTables/RecipeIngredient";
-import { RecipeSteps } from "./joinTables/RecipeStep";
-import { RecipeTags } from "./joinTables/RecipeTag";
+import { ServerContext } from "../types";
+import { Ingredient } from "./Ingredient";
+import { RecipeAuthor } from "./joinTables/RecipeAuthor";
+import { RecipeIngredient } from "./joinTables/RecipeIngredient";
+import { RecipeStep } from "./joinTables/RecipeStep";
+import { RecipeTag } from "./joinTables/RecipeTag";
 import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
+import { Step } from "./Step";
+import { Tag } from "./Tag";
+import { User } from "./User";
 
 @ObjectType() // For type-graphql API
 @Entity() // For TypeORM
@@ -37,16 +42,36 @@ export class Recipe extends BaseEntity {
     @OneToMany(() => UserSavedRecipes, ur => ur.recipe)
     userConnection: Promise<UserSavedRecipes[]>
 
-    @OneToMany(() => RecipeAuthors, ra => ra.recipe)
-    authorConnection: Promise<RecipeAuthors[]>
+    @OneToMany(() => RecipeAuthor, ra => ra.recipe)
+    authorConnection: Promise<RecipeAuthor[]>
 
-    @OneToMany(() => RecipeIngredients, ri => ri.recipe)
-    ingredientConnection: Promise<RecipeIngredients[]>;
+    @OneToMany(() => RecipeIngredient, ri => ri.recipe)
+    ingredientConnection: Promise<RecipeIngredient[]>;
 
-    @OneToMany(() => RecipeSteps, rs => rs.recipe)
-    stepConnection: Promise<RecipeSteps[]>
+    @OneToMany(() => RecipeStep, rs => rs.recipe)
+    stepConnection: Promise<RecipeStep[]>
 
-    @OneToMany(() => RecipeTags, rt => rt.tag)
-    tagConnection: Promise<RecipeTags[]>
+    @OneToMany(() => RecipeTag, rt => rt.tag)
+    tagConnection: Promise<RecipeTag[]>
+
+    @Field(() => [User], { nullable: true })
+    async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[]> {
+        return authorLoader!.load(this.id);
+    }
+
+    @Field(() => [Ingredient], { nullable: true })
+    async recipeIngredients(@Ctx() { ingredientLoader }: ServerContext): Promise<Ingredient[]> {
+        return ingredientLoader!.load(this.id);
+    }
+
+    @Field(() => [Step], { nullable: true })
+    async recipeSteps(@Ctx() { stepLoader }: ServerContext): Promise<Step[]> {
+        return stepLoader!.load(this.id);
+    }
+
+    @Field(() => [Tag], { nullable: true })
+    async recipeTags(@Ctx() { tagsLoader }: ServerContext): Promise<Tag[]> {
+        return tagsLoader!.load(this.id);
+    }
 
 }
