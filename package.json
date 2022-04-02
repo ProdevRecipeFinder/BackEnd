@@ -44,6 +44,7 @@
         "ioredis": "^5.0.3",
         "pg": "^8.7.3",
         "reflect-metadata": "^0.1.13",
-        "typeorm": "^0.2.45"
+        "typeorm": "^0.2.45",
+        "yarn": "^1.22.18"
     }
 }

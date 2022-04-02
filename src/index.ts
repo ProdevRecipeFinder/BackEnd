@@ -56,7 +56,7 @@ const main = async () => {
                 secure: __prod__
             },
             saveUninitialized: false,
-            secret: process.env.COOKIE_SECRET as string,
+            secret: "random-secret",
             resave: false
         })
     );
