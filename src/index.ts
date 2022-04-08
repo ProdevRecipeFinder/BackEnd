@@ -1,47 +1,50 @@
 import { ApolloServerPluginLandingPageDisabled, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
-import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
 import { buildSchema } from "type-graphql";
-import { createConnection } from "typeorm";
+import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
+import { createConnection, getConnection } from "typeorm";
 import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
-import { TestResolver } from "./resolvers/TestResolver";
+import { loadDb } from './DatabaseLoader/loadDB';
+import { IngredientsResolver } from './resolvers/IngredientRes';
+import { RecipeResolver } from "./resolvers/RecipeRes";
+import { StepsResolver } from './resolvers/StepRes';
+import { TagsResolver } from "./resolvers/TagsRes";
+import { UserResolver } from "./resolvers/UserRes";
 import typeormConfig from "./typeorm-config";
 import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
-import { RecipeLoader } from './utils/dataLoaders/recipeLoader';
+import { RecipeLoader } from "./utils/dataLoaders/recipeLoader";
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
 
 
+
 const main = async () => {
 
-    // Create Database Connection
+    //DB connection with TypeORM
     const conn = await createConnection(typeormConfig);
-
-    // Run all pending migrations
+    //Auto-run all pending migrations
     await conn.runMigrations();
 
-    // Express back-end service for HTTP protocol
+    // await loadDb();
+
+    //Express back-end server
     const app = express();
 
-    // Sets up Redis In-Memory Database
+    //Redis Session Store
     const RedisStore = require("connect-redis")(session);
-
-    // Redis client for interacting with the Redis Store
     const redis = new Redis();
 
-    // Allow request access from defined origin with enabled creditential auth
     app.use(
         cors({
             origin: "http://localhost:3000",
             credentials: true,
-        }));
+        }))
 
-    // Setup session with cookie initialized in redis store, attach redis client to session, set cookie params
     app.use(
         session({
             name: COOKIE_NAME,
@@ -59,27 +62,32 @@ const main = async () => {
             secret: "random-secret",
             resave: false
         })
-    );
+    )
 
-    //Apollo GraphQL endpoint setup with request resolvers
+
+    //Apollo GraphQL endpoint
     const apolloServer = new ApolloServer({
-        plugins: [ // GraphQL old playground enabled in development only
-            __prod__ ?
-                ApolloServerPluginLandingPageDisabled() :
-                ApolloServerPluginLandingPageGraphQLPlayground()
+        plugins: [ // GraphQL old playground
+            process.env.NODE_ENV === 'production'
+                ? ApolloServerPluginLandingPageDisabled()
+                : ApolloServerPluginLandingPageGraphQLPlayground(),
+            ApolloServerLoaderPlugin({
+                typeormGetConnection: getConnection,  // for use with TypeORM
+            }),
         ],
         schema: await buildSchema({
             resolvers: [
-                TestResolver,
-
-            ],
+                RecipeResolver,
+                UserResolver,
+                IngredientsResolver,
+                StepsResolver,
+                TagsResolver],
             validate: false,
         }),
-        //Context object accessible on GraphQL queries/mutations
-        //Loaders for eliminating n+1 problem
         context: ({ req, res }) => ({
             req,
             res,
+            redis,
             recipeLoader: RecipeLoader(),
             authorLoader: AuthorsLoader(),
             ingredientLoader: IngredientsLoader(),
@@ -95,16 +103,12 @@ const main = async () => {
         cors: false,
     });
 
-
-
-    // Listen to incoming HTTP requests on defined port
+    //Express port
     app.listen(4000), () => {
-        console.log("Server started on localhost:4000");
+        console.log("Express Server started on localhost:4000")
     };
 };
 
-
-// Error if main crashes
 main().catch((err) => {
     console.log(err);
 });

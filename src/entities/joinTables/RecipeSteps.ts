@@ -1,9 +1,10 @@
-import { Entity, BaseEntity, PrimaryColumn, JoinColumn, ManyToOne } from "typeorm";
+import { BaseEntity, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Recipe } from "../Recipe";
 import { Step } from "../Step";
 
+
 @Entity()
-export class RecipeStep extends BaseEntity {
+export class RecipeSteps extends BaseEntity {
     @PrimaryColumn()
     recipe_id!: number;
 
@@ -17,4 +18,6 @@ export class RecipeStep extends BaseEntity {
     @ManyToOne(() => Step, step => step.recipeStepConnection)
     @JoinColumn({ name: "step_id" })
     step: Promise<Step>;
+
 }
+

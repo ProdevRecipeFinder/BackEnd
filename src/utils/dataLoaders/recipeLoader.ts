@@ -1,9 +1,11 @@
 import { In } from "typeorm"
 import { Recipe } from "../../entities/Recipe";
 import { UserSavedRecipes } from "../../entities/joinTables/UserSavedRecipe"
-import DataLoader from 'dataloader';
 
-const batchFunction = async (keys: readonly number[]) => {
+
+const DataLoader = require('dataloader');
+
+const batchFunction = async (keys: number[]) => {
     const fetchedRecipes = await UserSavedRecipes.find({
         join: {
             alias: "UserSavedRecipes",
@@ -12,7 +14,7 @@ const batchFunction = async (keys: readonly number[]) => {
             }
         },
         where: {
-            user_id: In(keys as number[])
+            user_id: In(keys)
         }
     });
 

@@ -1,9 +1,10 @@
 import { Ctx, Field, ObjectType } from "type-graphql";
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ServerContext } from "../types";
-import { RecipeAuthor } from "./joinTables/RecipeAuthor";
-import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
+import { RecipeAuthors } from "./joinTables/RecipeAuthor";
 import { Recipe } from "./Recipe";
+import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
+
 
 @ObjectType()
 @Entity()
@@ -35,10 +36,9 @@ export class User extends BaseEntity {
     @OneToMany(() => UserSavedRecipes, ur => ur.user)
     recipeConnection: Promise<UserSavedRecipes[]>;
 
-    @OneToMany(() => RecipeAuthor, ra => ra.user)
-    ownRecipeConnection: Promise<RecipeAuthor[]>
+    @OneToMany(() => RecipeAuthors, ra => ra.user)
+    ownRecipeConnection: Promise<RecipeAuthors[]>
 
-    // Accessible field through API, loads related table with single SQL query
     @Field(() => [Recipe], { nullable: true })
     async savedRecipes(@Ctx() { recipeLoader }: ServerContext): Promise<Recipe[]> {
         return recipeLoader!.load(this.id)

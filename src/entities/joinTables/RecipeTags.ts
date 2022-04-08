@@ -1,9 +1,10 @@
-import { Entity, BaseEntity, PrimaryColumn, JoinColumn, ManyToOne } from "typeorm";
+import { BaseEntity, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Recipe } from "../Recipe";
 import { Tag } from "../Tag";
 
+
 @Entity()
-export class RecipeTag extends BaseEntity {
+export class RecipeTags extends BaseEntity {
     @PrimaryColumn()
     recipe_id!: number;
 
@@ -18,3 +19,4 @@ export class RecipeTag extends BaseEntity {
     @JoinColumn({ name: "tag_id" })
     tag: Promise<Tag>;
 }
+

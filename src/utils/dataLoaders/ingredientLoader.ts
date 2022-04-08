@@ -1,18 +1,19 @@
 import { In } from "typeorm";
 import { Ingredient } from "../../entities/Ingredient";
-import { RecipeIngredient } from "../../entities/joinTables/RecipeIngredient";
-import DataLoader from 'dataloader';
+import { RecipeIngredients } from "../../entities/joinTables/RecipeIngredients";
 
-const batchFunction = async (keys: readonly number[]) => {
-    const fetchedRecipes = await RecipeIngredient.find({
+const DataLoader = require('dataloader');
+
+const batchFunction = async (keys: number[]) => {
+    const fetchedRecipes = await RecipeIngredients.find({
         join: {
-            alias: "RecipeIngredient",
+            alias: "RecipeIngredients",
             innerJoinAndSelect: {
-                ingredient: "RecipeIngredient.ingredient"
+                ingredient: "RecipeIngredients.ingredient"
             }
         },
         where: {
-            recipe_id: In(keys as number[])
+            recipe_id: In(keys)
         }
     });
 
