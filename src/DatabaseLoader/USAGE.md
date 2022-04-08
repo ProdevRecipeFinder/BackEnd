@@ -8,4 +8,4 @@
 
 ### Uncomment the loadDb(); function in index.ts and start the application
 
-With the current dataset, it'll take longer than an hour to input the entire database, so for texting adjust the for-loop in loadDB.ts
+With the current dataset, it'll take longer than an hour to input the entire database, so for testing adjust the for-loop in loadDB.ts
