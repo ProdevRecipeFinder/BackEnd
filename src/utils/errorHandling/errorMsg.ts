@@ -55,6 +55,13 @@ export const PASS_INCORRECT = [
     }
 ]
 
+export const OLD_PASS_INCORRECT = [
+    {
+        field: "oldPassword",
+        message: "Old Password is incorrect"
+    }
+]
+
 export const TOKEN_INVALID = [
     {
         field: "token",
