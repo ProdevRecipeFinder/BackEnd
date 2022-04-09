@@ -8,7 +8,8 @@ import { buildSchema } from "type-graphql";
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
 import { createConnection, getConnection } from "typeorm";
 import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
-import { loadDb } from './DatabaseLoader/loadDB';
+import { SearchResolver } from './resolvers/ft_search/searchRes';
+// import { loadDb } from './DatabaseLoader/loadDB';
 import { IngredientsResolver } from './resolvers/IngredientRes';
 import { RecipeResolver } from "./resolvers/RecipeRes";
 import { StepsResolver } from './resolvers/StepRes';
@@ -81,7 +82,9 @@ const main = async () => {
                 UserResolver,
                 IngredientsResolver,
                 StepsResolver,
-                TagsResolver],
+                TagsResolver,
+                SearchResolver
+            ],
             validate: false,
         }),
         context: ({ req, res }) => ({
