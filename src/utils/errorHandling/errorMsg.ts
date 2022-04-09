@@ -64,14 +64,14 @@ export const OLD_PASS_INCORRECT = [
 
 export const TOKEN_INVALID = [
     {
-        field: "token",
+        field: "password",
         message: "Token invalid or expired"
     }
 ];
 
 export const TOKEN_ERR_GENERIC = [
     {
-        field: "token",
+        field: "password",
         message: "There was an issue validating the session token"
     }
 ]
