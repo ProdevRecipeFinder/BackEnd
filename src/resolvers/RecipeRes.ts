@@ -4,7 +4,7 @@ import { Recipe } from "../entities/Recipe";
 import { User } from "../entities/User";
 import { ServerContext } from "../types";
 import { RecipeAdder } from "./helpers/recipeAdder";
-import { IngredientsInput, RecipeInput, StepsInput, TagsInput } from "./ResTypes";
+import { RecipeInput } from "./ResTypes";
 
 
 
@@ -38,19 +38,16 @@ export class RecipeResolver {
     //Add New Recipe
     @Mutation(() => Recipe)
     async addNewRecipe(
-        @Arg("input") recipe_input: RecipeInput,
-        @Arg("ingredients") ingredients: IngredientsInput,
-        @Arg("steps") steps: StepsInput,
-        @Arg("tags") tags: TagsInput,
+        @Arg("input") input: RecipeInput,
         @Ctx() { req }: ServerContext
     ) {
         const newRecipe = await Recipe.create({
-            ...recipe_input,
+            ...input,
         }).save();
 
         const author: number = parseInt(req.session.userId);
 
-        await RecipeAdder(newRecipe, ingredients, steps, tags, author);
+        await RecipeAdder(newRecipe, input.ingredients, input.steps, input.tags, author);
 
         return Recipe.findOne({
             where: {
@@ -58,10 +55,6 @@ export class RecipeResolver {
             }
         })
     }
-
-    //Add Recipe to joint table
-    //For new recipe, addNewRecipe ==> get the returned JSON ==> addUserSavedRecipe with current session userId
-    //For recipe already in DB (different author) ==> find recipe ==> addUserSavedRecipe with current session userId
 
     @Mutation(() => Boolean)
     async saveRecipeToUser(
