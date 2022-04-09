@@ -78,7 +78,11 @@ export class UserResolver {
         @Ctx() { req }: ServerContext
     ): Promise<UserResponse> {
         const userRepo = getCustomRepository(UserRepository);
-        const user = await userRepo.findByUserName(user_info.username);
+
+        const user = user_info.username.includes('@')
+            ? await userRepo.findByEmail(user_info.username)
+            : await userRepo.findByUserName(user_info.username)
+
         if (!user) {
             return { errors: UNAME_NOTFOUND };
         }
