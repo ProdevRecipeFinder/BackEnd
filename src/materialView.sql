@@ -3,11 +3,15 @@
 CREATE MATERIALIZED VIEW search_index AS
 SELECT recipe.id,
         recipe.recipe_title,
+        recipe.recipe_desc,
+        recipe.photo_url,
+        recipe.rating_stars,
+        recipe.review_count,
         setweight(to_tsvector('english', recipe.recipe_title), 'A') 
         || 
-        setweight(to_tsvector('english', recipe.recipe_desc), 'B') 
+        setweight(to_tsvector('english', recipe.recipe_desc), 'C') 
         || 
-        setweight(to_tsvector('simple', coalesce(string_agg(ingredient.ingredient_name, ''))), 'A') as document
+        setweight(to_tsvector('english', coalesce(string_agg(ingredient.ingredient_name, ''))), 'B') as document
 FROM recipe
 JOIN recipe_ingredients ON recipe_ingredients.recipe_id = recipe_ingredients.ingredient_id
 JOIN ingredient ON ingredient.id = recipe_ingredients.ingredient_id
@@ -53,18 +57,24 @@ CREATE TRIGGER refresh_search_idx
 -- GENERATE MIGRATION, THEN CREATE EMPTY MIGRATION
 -- AND USE THE FOLLOWING QUERIES:
 
+await queryRunner.query(`DROP MATERIALIZED VIEW "public"."search_index" CASCADE;`);
+await queryRunner.query(`DROP FUNCTION "public".refresh_search_idx() CASCADE;`);
 await queryRunner.query(`CREATE MATERIALIZED VIEW search_index AS
-        SELECT recipe.id,
-                recipe.recipe_title,
-                setweight(to_tsvector('english', recipe.recipe_title), 'A') 
-                || 
-                setweight(to_tsvector('english', recipe.recipe_desc), 'B') 
-                || 
-                setweight(to_tsvector('simple', coalesce(string_agg(ingredient.ingredient_name, ''))), 'A') as document
-        FROM recipe
-        JOIN recipe_ingredients ON recipe_ingredients.recipe_id = recipe_ingredients.ingredient_id
-        JOIN ingredient ON ingredient.id = recipe_ingredients.ingredient_id
-        GROUP BY recipe.id;`);
+SELECT recipe.id,
+        recipe.recipe_title,
+        recipe.recipe_desc,
+        recipe.photo_url,
+        recipe.rating_stars,
+        recipe.review_count,
+        setweight(to_tsvector('english', recipe.recipe_title), 'A') 
+        || 
+        setweight(to_tsvector('english', recipe.recipe_desc), 'C') 
+        || 
+        setweight(to_tsvector('english', coalesce(string_agg(ingredient.ingredient_name, ''))), 'B') as document
+FROM recipe
+JOIN recipe_ingredients ON recipe_ingredients.recipe_id = recipe_ingredients.ingredient_id
+JOIN ingredient ON ingredient.id = recipe_ingredients.ingredient_id
+GROUP BY recipe.id;`);
         await queryRunner.query(`CREATE INDEX idx_ft_search ON search_index USING gin(document);`);
         await queryRunner.query(`CREATE OR REPLACE FUNCTION refresh_search_idx()
         RETURNS TRIGGER LANGUAGE plpgsql
