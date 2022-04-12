@@ -12,6 +12,9 @@
 - [x] on cold-boot of WSL, start postgres service: `sudo service postgresql start`
   - Make sure postgres database is set up `name: recipes_db` username and password: `postgres`
 
+- [x] If the database does not exits, run the following command in a new terminal session: `sudo -i -u postgres`
+  - Now, as postgres user, run the command `createdb recipes_db`
+
 - [x] start redis-server with command `redis-server` and keep this terminal session alive
 
 - [x] in a separate terminal instance, start tsc compiler with `yarn watch`
