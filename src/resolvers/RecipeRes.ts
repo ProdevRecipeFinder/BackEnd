@@ -59,8 +59,9 @@ export class RecipeResolver {
     @Mutation(() => Boolean)
     async saveRecipeToUser(
         @Arg("recipe_id") recipe_id: number,
-        @Arg("user_id") user_id: number
+        @Ctx() { req }: ServerContext
     ) {
+        const user_id: number = parseInt(req.session.userId);
         await UserSavedRecipes.create({ user_id, recipe_id }).save();
         return true;
     }
@@ -92,11 +93,12 @@ export class RecipeResolver {
 
     //Delete Saved Recipe
 
-    @Mutation(() => Recipe)
+    @Mutation(() => Boolean)
     async deleteSavedRecipe(
-        @Arg("user_id") user_id: number,
-        @Arg("recipe_id") recipe_id: number
+        @Arg("recipe_id") recipe_id: number,
+        @Ctx() { req }: ServerContext
     ): Promise<Boolean> {
+        const user_id: number = parseInt(req.session.userId);
         await UserSavedRecipes.delete({ user_id: user_id, recipe_id: recipe_id });
         return true;
     }
