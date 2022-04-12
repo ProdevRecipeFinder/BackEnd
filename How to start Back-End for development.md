@@ -17,6 +17,12 @@
 
 - [x] start redis-server with command `redis-server` and keep this terminal session alive
 
+- [x] if search is needed follow these steps:
+    - run this command in the back-end dir: `yarn typeorm migration:create -n full_text`
+    - open this created file in entities/migrations folder
+    - open `materialView.sql` file and copy the query-runners
+    - paste these into the migration file in the "up" section and save
+
 - [x] in a separate terminal instance, start tsc compiler with `yarn watch`
 
 - [x] in a separate terminal, start the server with `yarn dev`
