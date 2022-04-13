@@ -11,11 +11,11 @@ export class Ingredient extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Column()
     ingredient_name?: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Column({ nullable: true })
     ingredient_unit?: string;
 

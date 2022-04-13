@@ -15,6 +15,7 @@ import { RecipeResolver } from "./resolvers/RecipeRes";
 import { StepsResolver } from './resolvers/StepRes';
 import { TagsResolver } from "./resolvers/TagsRes";
 import { UserResolver } from "./resolvers/UserRes";
+import { UserSavedRecipesResolver } from './resolvers/UserSavedRecipeRes';
 import typeormConfig from "./typeorm-config";
 import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
@@ -83,7 +84,8 @@ const main = async () => {
                 IngredientsResolver,
                 StepsResolver,
                 TagsResolver,
-                SearchResolver
+                SearchResolver,
+                UserSavedRecipesResolver
             ],
             validate: false,
         }),

@@ -86,25 +86,25 @@ export class Recipe extends BaseEntity {
     @OneToMany(() => RecipeTags, rt => rt.tag)
     tagConnection: Promise<RecipeTags[]>
 
-    @Field(() => [User], { nullable: true })
-    async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[] | {}> {
+    @Field(() => [User])
+    async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[]> {
 
         if (this.external_author) {
             return [
                 {
                     user_name: this.external_author,
                 }
-            ]
+            ] as unknown as [User];
         }
         return authorLoader.load(this.id);
     }
 
-    @Field(() => [Ingredient], { nullable: true })
+    @Field(() => [Ingredient])
     async recipeIngredients(@Ctx() { ingredientLoader }: ServerContext): Promise<Ingredient[]> {
         return ingredientLoader.load(this.id);
     }
 
-    @Field(() => [Step], { nullable: true })
+    @Field(() => [Step])
     async recipeSteps(@Ctx() { stepLoader }: ServerContext): Promise<Step[]> {
         return stepLoader.load(this.id);
     }

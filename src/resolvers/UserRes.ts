@@ -6,8 +6,8 @@ import { COOKIE_NAME, FORGOT_PASS_PREFIX, ONE_DAY } from "../constants";
 import { User } from "../entities/User";
 import { UserRepository } from "../repositories/UserRepo";
 import { ServerContext } from "../types";
-import { EMAIL_TAKEN, PASS_INCORRECT, TOKEN_ERR_GENERIC, TOKEN_INVALID, UNAME_NOTFOUND, UNAME_TAKEN } from "../utils/errorHandling/errorMsg";
-import { validatePassword, validateRegister } from "../utils/errorHandling/validateRegister";
+import { EMAIL_TAKEN, OLD_PASS_INCORRECT, PASS_INCORRECT, TOKEN_ERR_GENERIC, TOKEN_INVALID, UNAME_NOTFOUND, UNAME_TAKEN } from "../utils/errorHandling/errorMsg";
+import { validatePassword, validateRegister, validateUname } from "../utils/errorHandling/validateRegister";
 import { sendMail } from "../utils/sendMail";
 import { LoginInfo, RegInfo, UserResponse } from "./ResTypes";
 
@@ -115,6 +115,55 @@ export class UserResolver {
         })
     }
 
+
+    @Mutation(() => UserResponse)
+    async changeUsername(
+        @Arg("user_name") user_name: string,
+        @Ctx() { req }: ServerContext
+    ): Promise<UserResponse> {
+        const userRepo = getCustomRepository(UserRepository);
+
+        const user = await User.findOne(parseInt(req.session.userId));
+        const notUnique = await userRepo.findByUserName(user_name);
+
+        const errors = validateUname(user_name);
+        if (errors) {
+            return { errors }
+        }
+
+        if (!notUnique) {
+            user!.user_name = user_name
+        }
+        User.save(user!);
+        return { user };
+    }
+
+    @Mutation(() => UserResponse)
+    async changePassword(
+        @Arg("oldPass") oldPass: string,
+        @Arg("newPass") newPass: string,
+        @Ctx() { req }: ServerContext
+    ): Promise<UserResponse> {
+        const user = await User.findOne(parseInt(req.session.userId));
+
+        const checkOldPass = await argon2.verify(user!.password, oldPass);
+        if (!checkOldPass) {
+            return { errors: OLD_PASS_INCORRECT }
+        }
+
+        const validate = validatePassword(newPass);
+        if (validate) {
+            return { errors: validate }
+        }
+
+        user!.password = await argon2.hash(newPass);
+        User.save(user!);
+
+        req.session.userId = user!.id;
+        return { user };
+    }
+
+
     @Mutation(() => Boolean)
     async forgotPassword(
         @Arg("email") email: string,
@@ -133,7 +182,7 @@ export class UserResolver {
     }
 
     @Mutation(() => UserResponse)
-    async changePassword(
+    async changeForgotPassword(
         @Arg("token") token: string,
         @Arg("newPass") newPass: string,
         @Ctx() { req, redis }: ServerContext
