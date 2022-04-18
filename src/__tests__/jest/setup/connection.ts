@@ -1,5 +1,5 @@
 import { createConnection, getConnection } from 'typeorm';
-import typeormConfig from '../../typeorm-config';
+import typeormConfig from '../../../typeorm-config';
 
 const connection = {
     async create() {

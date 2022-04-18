@@ -3054,6 +3054,11 @@ json5@2.x, json5@^2.2.1:
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.1.tgz#655d50ed1e6f95ad1a3caababd2b0efda10b395c"
   integrity sha512-1hqLFMSrGHRHxav9q9gNjJ5EXznIxGVO09xQRrwplcS8qs28pZ8s8hupZAmqDwZUmVZ2Qb2jnyPOWcDH8m8dlA==
 
+k6@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/k6/-/k6-0.0.0.tgz#8c923200be0a68c578e8f5a32be96b1d8065cc3b"
+  integrity sha1-jJIyAL4KaMV46PWjK+lrHYBlzDs=
+
 keyv@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/keyv/-/keyv-3.1.0.tgz#ecc228486f69991e49e9476485a5be1e8fc5c4d9"
