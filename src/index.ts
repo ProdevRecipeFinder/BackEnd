@@ -9,11 +9,7 @@ import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
 import { createConnection, getConnection } from "typeorm";
 import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
 import { SearchResolver } from './resolvers/ft_search/searchRes';
-// import { loadDb } from './DatabaseLoader/loadDB';
-import { IngredientsResolver } from './resolvers/IngredientRes';
 import { RecipeResolver } from "./resolvers/RecipeRes";
-import { StepsResolver } from './resolvers/StepRes';
-import { TagsResolver } from "./resolvers/TagsRes";
 import { UserResolver } from "./resolvers/UserRes";
 import { UserSavedRecipesResolver } from './resolvers/UserSavedRecipeRes';
 import typeormConfig from "./typeorm-config";
@@ -43,7 +39,7 @@ const main = async () => {
 
     app.use(
         cors({
-            origin: "http://[::1]:3000",
+            origin: "http://localhost:3000",
             credentials: true,
         }))
 
@@ -81,9 +77,6 @@ const main = async () => {
             resolvers: [
                 RecipeResolver,
                 UserResolver,
-                IngredientsResolver,
-                StepsResolver,
-                TagsResolver,
                 SearchResolver,
                 UserSavedRecipesResolver
             ],

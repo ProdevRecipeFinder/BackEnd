@@ -8,7 +8,6 @@ export class SearchResolver {
     async searchRecipes(
         @Arg("search") search: string
     ) {
-
         console.log("called: " + search);
 
         const keywords = search.split(" ");

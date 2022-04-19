@@ -45,11 +45,14 @@ export class RecipeResolver {
         @Arg("input") input: RecipeInput,
         @Ctx() { req }: ServerContext
     ) {
+
+
         const newRecipe = await Recipe.create({
             ...input,
         }).save();
 
         const author: number = parseInt(req.session.userId);
+
 
         await RecipeAdder(newRecipe, input.ingredients, input.steps, input.tags, author);
 
