@@ -1,6 +1,7 @@
 import { ApolloServerPluginLandingPageDisabled, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
+import "dotenv-safe/config";
 import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
@@ -39,11 +40,13 @@ const main = async () => {
 
     //Redis Session Store
     const RedisStore = require("connect-redis")(session);
-    const redis = new Redis();
+    const redis = new Redis(process.env.REDIS_URL);
+
+    app.set('proxy', 1);
 
     app.use(
         cors({
-            origin: "http://localhost:3000",
+            origin: process.env.FRONTEND_TARGET,
             credentials: true,
         }))
 
@@ -58,10 +61,11 @@ const main = async () => {
                 maxAge: ONE_DAY * 365 * 10, // 10 years 
                 httpOnly: true,
                 sameSite: "lax", //CSRF
-                secure: __prod__
+                secure: __prod__,
+                domain: __prod__ ? '.findmesome.recipes' : 'http://localhost:3000',
             },
             saveUninitialized: false,
-            secret: "random-secret",
+            secret: process.env.COOKIE_SECRET,
             resave: false
         })
     )
@@ -109,8 +113,8 @@ const main = async () => {
     });
 
     //Express port
-    app.listen(4000), () => {
-        console.log("Express Server started on localhost:4000")
+    app.listen(parseInt(process.env.PORT)), () => {
+        console.log("Express Server started on: " + process.env.PORT)
     };
 };
 

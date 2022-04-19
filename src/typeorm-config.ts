@@ -1,4 +1,5 @@
 import path from "path";
+import "dotenv-safe/config";
 import { ConnectionOptions } from "typeorm";
 import { Tag } from "./entities/Tag";
 import { Recipe } from "./entities/Recipe";
@@ -13,9 +14,7 @@ import { Step } from "./entities/Step";
 
 export default {
     type: "postgres",
-    database: "recipes_db",
-    username: "postgres",
-    password: "postgres",
+    url: process.env.DATABASE_URL,
     synchronize: false,
     entities: [
         User,

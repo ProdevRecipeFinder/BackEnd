@@ -176,7 +176,7 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(FORGOT_PASS_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = `<a> href="${process.env.FRONTEND_TARGET}/change-password/${token}"</a>`;
+        const html = `<ahref="${process.env.CORS_ORIGIN}/reset-password/${token}"/>`;
         await sendMail(email, html);
         return true;
     }
