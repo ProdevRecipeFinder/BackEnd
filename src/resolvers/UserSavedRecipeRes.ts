@@ -7,7 +7,11 @@ export class UserSavedRecipesResolver {
 
     @Query(() => [Boolean])
     async getSavedStatus(
+<<<<<<< HEAD
         @Arg("recipe_ids", () => [Number]) recipe_ids: number[],
+=======
+        @Arg("recipe_id") recipe_ids: [number],
+>>>>>>> 7f96cc3d53ee01fcf3aa104541712ff07b6be138
         @Ctx() { req }: ServerContext
     ) {
 
