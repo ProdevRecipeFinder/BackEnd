@@ -24,8 +24,9 @@ export class UserSavedRecipesResolver {
             });
             if (!found) {
                 responseArray.push(false);
+            } else {
+                responseArray.push(true);
             }
-            responseArray.push(true);
         }
 
         return responseArray;
