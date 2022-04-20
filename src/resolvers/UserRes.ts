@@ -177,7 +177,7 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(FORGOT_PASS_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = `<a> href="${process.env.FRONTEND_TARGET}/change-password/${token}"</a>`;
+        const html = `<a href="${process.env.CORS_ORIGIN}/reset-password/${token}">Change Password</a>`;
         await sendMail(email, html);
         return true;
     }
@@ -221,7 +221,7 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(DELETE_ACCOUNT_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = `<a> href="${process.env.FRONTEND_TARGET}/delete-account/${token}"</a>`;
+        const html = `<a href="${process.env.CORS_ORIGIN}/delete-account/${token}">Delete Account</a>`;
         await sendMail(user.email, html);
         return true;
     }
