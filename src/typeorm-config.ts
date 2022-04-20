@@ -16,6 +16,7 @@ export default {
     database: "recipes_db",
     username: "postgres",
     password: "postgres",
+    // url:"postgresql://postgres:postgres@127.0.0.1:5432/recipes_db",
     synchronize: false,
     entities: [
         User,

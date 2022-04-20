@@ -23,7 +23,9 @@ export class RecipeResolver {
     async getOneRecipe(
         @Arg("id") id: number
     ) {
-        return Recipe.findOne(id);
+        const recipe = await Recipe.findOne(id);
+        return recipe;
+
     }
 
     // **** REQUIRES PERMISSIONS **** //
@@ -66,6 +68,8 @@ export class RecipeResolver {
         @Ctx() { req }: ServerContext
     ) {
         const user_id: number = parseInt(req.session.userId);
+        console.log(req.session);
+
         await UserSavedRecipes.create({ user_id, recipe_id }).save();
         return true;
     }

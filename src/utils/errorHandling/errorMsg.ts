@@ -75,3 +75,10 @@ export const TOKEN_ERR_GENERIC = [
         message: "There was an issue validating the session token"
     }
 ]
+
+export const DELETE_SUCCESS = [
+    {
+        field: "user",
+        message: "User deleted successfully"
+    }
+]
