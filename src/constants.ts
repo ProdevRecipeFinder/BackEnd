@@ -1,6 +1,7 @@
 export const __prod__ = process.env.NODE_ENV === "production";
 export const COOKIE_NAME = "qid";
 export const FORGOT_PASS_PREFIX = "forgot-pass:";
+export const DELETE_ACCOUNT_PREFIX = "delete-account";
 export const ONE_DAY = 1000 * 60 * 60 * 24;
 
 

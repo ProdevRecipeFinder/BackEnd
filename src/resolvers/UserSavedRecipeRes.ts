@@ -13,7 +13,7 @@ export class UserSavedRecipesResolver {
         let responseArray: boolean[] = [];
         const userId: number = req.session.userId;
         if (!userId) {
-            return []
+            return [];
         }
 
         for (let i = 0; i < recipe_ids.length; i++) {
