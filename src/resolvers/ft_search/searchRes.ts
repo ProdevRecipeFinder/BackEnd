@@ -1,29 +1,12 @@
-import { Arg, Field, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Query, Resolver } from "type-graphql";
 import { getManager } from "typeorm";
-import { Recipe } from "../../entities/Recipe";
-
-@ObjectType()
-class PageInfo {
-    @Field({ nullable: true })
-    endCursor: number;
-    @Field()
-    hasNextPage: boolean;
-}
-
-@ObjectType()
-class PaginatedSearch {
-    @Field(() => [Recipe])
-    recipes: Recipe[];
-    @Field(() => PageInfo)
-    pageInfo: PageInfo;
-}
-
+import { PaginatedRecipe } from "../helpers/_@_ObjectTypes";
 
 
 @Resolver()
 export class SearchResolver {
 
-    @Query(() => PaginatedSearch)
+    @Query(() => PaginatedRecipe)
     async searchRecipes(
         @Arg("search") search: string,
         @Arg("limit", { nullable: true }) limit: number,
@@ -50,7 +33,7 @@ export class SearchResolver {
         }
         const adjustedFetchLimit = fetchLimit + 1;
 
-        const replacements: Array<String> = [];
+        const replacements: string[] = [];
 
         replacements.push(queryFormat);
         replacements.push(adjustedFetchLimit.toString())
@@ -58,10 +41,6 @@ export class SearchResolver {
         if (cursor) {
             replacements.push(cursor.toString());
         }
-
-        console.log(replacements);
-
-
 
         const searchQuerySQL = `
         SELECT "id" AS "id", "recipe_title", "recipe_desc", "photo_url", "rating_stars", "review_count"
