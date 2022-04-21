@@ -102,7 +102,7 @@ const main = async () => {
     });
 
     //Express port
-    app.listen(4000), () => {
+    app.listen(4000, "0.0.0.0"), () => {
         console.log("Express Server started on localhost:4000")
     };
 };
