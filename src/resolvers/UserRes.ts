@@ -177,7 +177,19 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(FORGOT_PASS_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = `<a href="${process.env.CORS_ORIGIN}/reset-password/${token}">Change Password</a>`;
+        const html = `
+        <div>
+            <div style="margin: 0 auto; border: 1px solid grey; border-radius: 0.5em; padding: 2em; text-align: center;">
+            <h1>Reset your RecipeFinder password</h1>
+            <p>We heard that you lost your GitHub password. Sorry about that!</p>
+            <p>But don’t worry! You can use the following button to reset your password:</p> 
+            <a href="${process.env.CORS_ORIGIN}/reset-password/${token}">
+                <button style="padding: 1em; background: rgb(72, 170, 72); color: white; border: none; border-radius: 0.5em;">Reset your Password</button>
+            </a>
+            <p>If you don’t use this link within 24 hours, it will expire. To get a new password reset link, go <a href="https://findmesome.recipes/reset-password">here</a></p>
+            </div>
+        <div>
+        `;
         await sendMail(email, html);
         return true;
     }
