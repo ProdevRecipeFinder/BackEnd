@@ -11,6 +11,7 @@ import { validatePassword, validateRegister, validateUname } from "../utils/erro
 import { sendMail } from "../utils/sendMail";
 import { UserDeleter } from "./helpers/userDeleter";
 import { LoginInfo, RegInfo, UserResponse } from "./ResTypes";
+import loadHtml from "../utils/loadHtml";
 
 @Resolver(User)
 export class UserResolver {
@@ -177,23 +178,13 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(FORGOT_PASS_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = `
-        <div>
-            <div style="margin: 0 auto; border: 1px solid grey; border-radius: 0.5em; padding: 2em; text-align: center;">
-            <h1>Reset your RecipeFinder password</h1>
-            <p>We heard that you lost your GitHub password. Sorry about that!</p>
-            <p>But don’t worry! You can use the following button to reset your password:</p> 
-            <a href="${process.env.CORS_ORIGIN}/reset-password/${token}">
-                <button style="padding: 1em; background: rgb(72, 170, 72); color: white; border: none; border-radius: 0.5em;">Reset your Password</button>
-            </a>
-            <p>If you don’t use this link within 24 hours, it will expire. To get a new password reset link, go <a href="https://findmesome.recipes/reset-password">here</a></p>
-            </div>
-        <div>
-        `;
-        await sendMail(email, html);
+
+        const html = loadHtml(`${process.cwd()}/src/html/deleteAccount.html`, `${process.env.CORS_ORIGIN}/reset-password/${token}`)
+        await sendMail(email, "[RecipeFinder] Please reset your password", html);
+
         return true;
     }
-
+ 
     @Mutation(() => UserResponse)
     async changeForgotPassword(
         @Arg("token") token: string,
@@ -233,8 +224,8 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(DELETE_ACCOUNT_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = `<a href="${process.env.CORS_ORIGIN}/delete-account/${token}">Delete Account</a>`;
-        await sendMail(user.email, html);
+        const html = loadHtml(`${process.cwd()}/src/html/deleteAccount.html`, `${process.env.CORS_ORIGIN}/delete-account/${token}`)
+        await sendMail(user.email, "[RecipeFinder] Delete your account", html);
         return true;
     }
 
