@@ -179,7 +179,7 @@ export class UserResolver {
         const token = v4();
         await redis.set(FORGOT_PASS_PREFIX + token, user.id, 'ex', ONE_DAY);
 
-        const html = loadHtml(`${process.cwd()}/src/html/deleteAccount.html`, `${process.env.CORS_ORIGIN}/reset-password/${token}`)
+        const html = loadHtml(`${process.cwd()}/src/html/resetPassword.html`, `${process.env.CORS_ORIGIN}/reset-password/${token}`)
         await sendMail(email, "[RecipeFinder] Please reset your password", html);
 
         return true;
