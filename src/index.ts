@@ -9,20 +9,15 @@ import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
 import { createConnection, getConnection } from "typeorm";
 import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
 import { SearchResolver } from './resolvers/ft_search/searchRes';
-// import { loadDb } from './DatabaseLoader/loadDB';
-import { IngredientsResolver } from './resolvers/IngredientRes';
 import { RecipeResolver } from "./resolvers/RecipeRes";
-import { StepsResolver } from './resolvers/StepRes';
-import { TagsResolver } from "./resolvers/TagsRes";
 import { UserResolver } from "./resolvers/UserRes";
 import { UserSavedRecipesResolver } from './resolvers/UserSavedRecipeRes';
 import typeormConfig from "./typeorm-config";
 import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
-import { RecipeLoader } from "./utils/dataLoaders/recipeLoader";
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
-
+//import { loadDb } from "./DatabaseLoader/loadDB";
 
 
 const main = async () => {
@@ -30,9 +25,9 @@ const main = async () => {
     //DB connection with TypeORM
     const conn = await createConnection(typeormConfig);
     //Auto-run all pending migrations
-    await conn.runMigrations();
+    //await conn.runMigrations();
 
-    // await loadDb();
+    //await loadDb();
 
     //Express back-end server
     const app = express();
@@ -81,9 +76,6 @@ const main = async () => {
             resolvers: [
                 RecipeResolver,
                 UserResolver,
-                IngredientsResolver,
-                StepsResolver,
-                TagsResolver,
                 SearchResolver,
                 UserSavedRecipesResolver
             ],
@@ -93,7 +85,6 @@ const main = async () => {
             req,
             res,
             redis,
-            recipeLoader: RecipeLoader(),
             authorLoader: AuthorsLoader(),
             ingredientLoader: IngredientsLoader(),
             stepLoader: StepsLoader(),
@@ -109,7 +100,7 @@ const main = async () => {
     });
 
     //Express port
-    app.listen(4000), () => {
+    app.listen(4000, "0.0.0.0"), () => {
         console.log("Express Server started on localhost:4000")
     };
 };

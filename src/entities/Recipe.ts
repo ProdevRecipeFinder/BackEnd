@@ -99,14 +99,14 @@ export class Recipe extends BaseEntity {
         return authorLoader.load(this.id);
     }
 
-    @Field(() => [Ingredient])
+    @Field(() => [Ingredient], { nullable: true })
     async recipeIngredients(@Ctx() { ingredientLoader }: ServerContext): Promise<Ingredient[]> {
-        return ingredientLoader.load(this.id);
+        return await ingredientLoader.load(this.id);
     }
 
-    @Field(() => [Step])
+    @Field(() => [Step], { nullable: true })
     async recipeSteps(@Ctx() { stepLoader }: ServerContext): Promise<Step[]> {
-        return stepLoader.load(this.id);
+        return await stepLoader.load(this.id);
     }
 
     @Field(() => [Tag], { nullable: true })
