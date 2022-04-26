@@ -15,7 +15,6 @@ import { UserSavedRecipesResolver } from './resolvers/UserSavedRecipeRes';
 import typeormConfig from "./typeorm-config";
 import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
-import { RecipeLoader } from "./utils/dataLoaders/recipeLoader";
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
 //import { loadDb } from "./DatabaseLoader/loadDB";
@@ -86,7 +85,6 @@ const main = async () => {
             req,
             res,
             redis,
-            recipeLoader: RecipeLoader(),
             authorLoader: AuthorsLoader(),
             ingredientLoader: IngredientsLoader(),
             stepLoader: StepsLoader(),
