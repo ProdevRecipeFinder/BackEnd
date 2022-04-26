@@ -25,7 +25,7 @@ const main = async () => {
     //DB connection with TypeORM
     const conn = await createConnection(typeormConfig);
     //Auto-run all pending migrations
-    await conn.runMigrations();
+    //await conn.runMigrations();
 
     //await loadDb();
 

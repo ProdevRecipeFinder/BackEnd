@@ -10,7 +10,6 @@ export class UserSavedRecipesResolver {
         @Arg("recipe_ids", () => [Number]) recipe_ids: number[],
         @Ctx() { req }: ServerContext
     ) {
-
         let responseArray: boolean[] = [];
         const userId: number = req.session.userId;
         if (!userId) {
