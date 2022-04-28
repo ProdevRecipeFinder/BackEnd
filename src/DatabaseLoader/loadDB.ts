@@ -6,7 +6,7 @@ import { Step } from "../entities/Step";
 import { DatabaseInput } from "./types";
 
 
-const db = require('/Users/AbdullaFakhroo/output.json');
+const db = require('../../../test/output.json');
 
 export const loadDb = async () => {
 
@@ -58,6 +58,4 @@ const addRecipe = async (input: DatabaseInput) => {
             step_id: instruction.id
         }).save();
     };
-
-    console.log(newRecipe.recipe_title);
 }

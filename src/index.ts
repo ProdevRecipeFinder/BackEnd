@@ -17,17 +17,18 @@ import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
-//import { loadDb } from "./DatabaseLoader/loadDB";
+// import { loadDb } from "./DatabaseLoader/loadDB";
 
 
 const main = async () => {
 
     //DB connection with TypeORM
     const conn = await createConnection(typeormConfig);
-    //Auto-run all pending migrations
-    //await conn.runMigrations();
 
-    //await loadDb();
+    //Auto-run all pending migrations
+    await conn.runMigrations();
+
+    // await loadDb();
 
     //Express back-end server
     const app = express();

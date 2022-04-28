@@ -53,9 +53,6 @@ export class SearchResolver {
 
         const foundRecipes = await getManager().query(searchQuerySQL, replacements);
 
-        console.log(foundRecipes);
-
-
         return {
             recipes: foundRecipes.slice(0, fetchLimit),
             pageInfo: {

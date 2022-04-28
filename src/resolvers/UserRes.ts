@@ -65,7 +65,7 @@ export class UserResolver {
         }
 
         const hashedPass = await argon2.hash(user_info.password)
-        const user = User.create({ user_name: user_info.user_name, email: user_info.email, password: hashedPass });
+        const user = User.create({ user_name: user_info.user_name, email: user_info.email, password: hashedPass, theme: "dark"});
         await user.save();
 
         req.session.userId = user.id;
@@ -73,7 +73,6 @@ export class UserResolver {
     }
 
     //LOGIN
-
     @Mutation(() => UserResponse)
     async login(
         @Arg("user_info") user_info: LoginInfo,

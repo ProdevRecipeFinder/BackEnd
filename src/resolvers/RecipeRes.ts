@@ -2,13 +2,63 @@ import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getManager } from "typeorm";
 import { UserSavedRecipes } from "../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../entities/Recipe";
+import { Ingredient } from "../entities/Ingredient";
+import { RecipeIngredients } from "../entities/joinTables/RecipeIngredients";
+import { RecipeSteps } from "../entities/joinTables/RecipeSteps";
+import { Step } from "../entities/Step";
 import { throwAuthError } from "../middleware/checkAuth";
-import { ServerContext } from "../types";
+import { ServerContext, RecipeInput } from "../types";
 import { PaginatedRecipe } from "./helpers/_@_ObjectTypes";
+import { User } from "../entities/User";
+
+const addRecipe = async (input: RecipeInput, author: string): Promise<number> => {
+
+  console.log("addRecipe called")
+
+  const newRecipe = await Recipe.create({
+      recipe_title: input.recipe_title,
+      external_author: author,
+      recipe_desc: input.recipe_desc,
+      prep_time_minutes: input.prep_time_minutes,
+      cook_time_minutes: input.cook_time_minutes,
+      total_time_minutes: input.prep_time_minutes + input.cook_time_minutes,
+      footnotes: input.footnotes,
+      original_url: input.original_url,
+      photo_url: input.photo_url,
+      rating_stars: undefined,
+      review_count: "0"
+  }).save();
+
+  for (let i = 0; i < input.ingredients.length; i++) {
+      const ingredient = await Ingredient.create({
+          ingredient_name: input.ingredients[i].ingredient,
+          ingredient_unit: input.ingredients[i].unit,
+          ingredient_qty: input.ingredients[i].quantity
+      }).save();
+
+      await RecipeIngredients.create({
+          recipe_id: newRecipe.id,
+          ingredient_id: ingredient.id
+      }).save();
+  };
+
+  for (let i = 0; i < input.instructions.length; i++) {
+      const instruction = await Step.create({
+          step_desc: input.instructions[i].step_desc,
+      }).save();
+
+      await RecipeSteps.create({
+          recipe_id: newRecipe.id,
+          step_id: instruction.id
+      }).save();
+  };
+
+  console.log(newRecipe.recipe_title);
+  return newRecipe.id
+}
 
 @Resolver(Recipe)
 export class RecipeResolver {
-
 
   // **** NO PERMISSIONS **** //
   @Query(() => [Recipe], { nullable: true })
@@ -72,10 +122,10 @@ export class RecipeResolver {
     replacements.push(adjustedFetchLimit.toString());
 
     const getHomepageSQL = `
-    SELECT "recipe"."id" as "id", "recipe_title", "recipe_desc", "photo_url", "rating_stars", "review_count"
-    FROM "recipe"
-    ORDER BY RANDOM()
-    LIMIT $1;
+      SELECT "recipe"."id" as "id", "recipe_title", "recipe_desc", "photo_url", "rating_stars", "review_count"
+      FROM "recipe"
+      ORDER BY RANDOM()
+      LIMIT $1;
     `
 
     const fetchedHomepageResults = await getManager().query(getHomepageSQL, replacements);
@@ -208,27 +258,28 @@ export class RecipeResolver {
   // }
 
   //Add New Recipe
-  // @Mutation(() => Recipe)
-  // async addNewRecipe(
-  //   @Arg("input") input: RecipeInput,
-  //   @Ctx() { req }: ServerContext
-  // ) {
+  @Mutation(() => Recipe)
+  async addNewRecipe(
+    @Arg("input") input: RecipeInput, 
+    @Ctx() { req }: ServerContext
+  ) {
+    // const newRecipe = await Recipe.create({...input}).save();
 
-  //     ...input,
-  //   const newRecipe = await Recipe.create({
-  //   }).save();
+    console.log("addNewRecipe ran")
 
-  //   const author: number = parseInt(req.session.userId);
+    // Fine user by id
+    // const user = await User.findOne(parseInt(req.session.userId));
 
+    // await RecipeAdder(newRecipe, input.ingredients, input.instructions, author);
 
-  //   await RecipeAdder(newRecipe, input.ingredients, input.steps, input.tags, author);
+    const id = await addRecipe(input, "Tester");
 
-  //   return Recipe.findOne({
-  //     where: {
-  //       id: newRecipe.id
-  //     }
-  //   })
-  // }
+    return Recipe.findOne({
+      where: {
+        id
+      } 
+    })
+  }
 
 
 }
