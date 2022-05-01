@@ -1,14 +1,13 @@
 import { UserSavedRecipes } from "../../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../../entities/Recipe";
-import { RecipeInput } from "../ResTypes";
-import { addIngredients, addSteps } from "./addSubRows";
 import { deleteIngredients, deleteSteps } from "./deleteSubRows";
 
-export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, req_id: number): Promise<boolean> => {
+export const RecipeDeleter = async (id: number, req_id: number): Promise<boolean> => {
+
   const recipe = await Recipe.findOne(id);
   if (!recipe) {
     return false;
-  }
+  };
   const author = await UserSavedRecipes.findOne({
     where: {
       recipe_id: recipe.id
@@ -22,13 +21,16 @@ export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, req_i
   };
 
   await deleteIngredients(recipe.id);
+
   await deleteSteps(recipe.id);
 
-  await addIngredients(recipe_input.ingredients, recipe.id);
-  await addSteps(recipe_input.instructions, recipe.id);
+  await UserSavedRecipes.delete({
+    recipe_id: recipe.id
+  });
 
-  Object.assign(recipe, recipe_input);
-  await recipe.save();
+  await Recipe.delete({
+    id: recipe.id
+  })
+
   return true;
-};
-
+}

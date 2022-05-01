@@ -22,90 +22,90 @@ import { TagsLoader } from './utils/dataLoaders/tagsLoader';
 
 const main = async () => {
 
-    //DB connection with TypeORM
-    const conn = await createConnection(typeormConfig);
+  //DB connection with TypeORM
+  const conn = await createConnection(typeormConfig);
 
-    //Auto-run all pending migrations
-    await conn.runMigrations();
+  //Auto-run all pending migrations
+  await conn.runMigrations();
 
-    // await loadDb();
+  // await loadDb();
 
-    //Express back-end server
-    const app = express();
+  //Express back-end server
+  const app = express();
 
-    //Redis Session Store
-    const RedisStore = require("connect-redis")(session);
-    const redis = new Redis();
+  //Redis Session Store
+  const RedisStore = require("connect-redis")(session);
+  const redis = new Redis();
 
-    app.use(
-        cors({
-            origin: "http://localhost:3000",
-            credentials: true,
-        }))
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    }))
 
-    app.use(
-        session({
-            name: COOKIE_NAME,
-            store: new RedisStore({
-                client: redis,
-                disableTouch: true
-            }),
-            cookie: {
-                maxAge: ONE_DAY * 365 * 10, // 10 years 
-                httpOnly: true,
-                sameSite: "lax", //CSRF
-                secure: __prod__
-            },
-            saveUninitialized: false,
-            secret: "random-secret",
-            resave: false
-        })
-    )
+  app.use(
+    session({
+      name: COOKIE_NAME,
+      store: new RedisStore({
+        client: redis,
+        disableTouch: true
+      }),
+      cookie: {
+        maxAge: ONE_DAY * 365 * 10, // 10 years 
+        httpOnly: true,
+        sameSite: "lax", //CSRF
+        secure: __prod__
+      },
+      saveUninitialized: false,
+      secret: "random-secret",
+      resave: false
+    })
+  )
 
 
-    //Apollo GraphQL endpoint
-    const apolloServer = new ApolloServer({
-        plugins: [ // GraphQL old playground
-            process.env.NODE_ENV === 'production'
-                ? ApolloServerPluginLandingPageDisabled()
-                : ApolloServerPluginLandingPageGraphQLPlayground(),
-            ApolloServerLoaderPlugin({
-                typeormGetConnection: getConnection,  // for use with TypeORM
-            }),
-        ],
-        schema: await buildSchema({
-            resolvers: [
-                RecipeResolver,
-                UserResolver,
-                SearchResolver,
-                UserSavedRecipesResolver
-            ],
-            validate: false,
-        }),
-        context: ({ req, res }) => ({
-            req,
-            res,
-            redis,
-            authorLoader: AuthorsLoader(),
-            ingredientLoader: IngredientsLoader(),
-            stepLoader: StepsLoader(),
-            tagsLoader: TagsLoader()
-        })
-    });
+  //Apollo GraphQL endpoint
+  const apolloServer = new ApolloServer({
+    plugins: [ // GraphQL old playground
+      process.env.NODE_ENV === 'production'
+        ? ApolloServerPluginLandingPageDisabled()
+        : ApolloServerPluginLandingPageGraphQLPlayground(),
+      ApolloServerLoaderPlugin({
+        typeormGetConnection: getConnection,  // for use with TypeORM
+      }),
+    ],
+    schema: await buildSchema({
+      resolvers: [
+        RecipeResolver,
+        UserResolver,
+        SearchResolver,
+        UserSavedRecipesResolver
+      ],
+      validate: false,
+    }),
+    context: ({ req, res }) => ({
+      req,
+      res,
+      redis,
+      authorLoader: AuthorsLoader(),
+      ingredientLoader: IngredientsLoader(),
+      stepLoader: StepsLoader(),
+      tagsLoader: TagsLoader()
+    })
+  });
 
-    await apolloServer.start();
-    //Listen to GraphQL via express server
-    apolloServer.applyMiddleware({
-        app,
-        cors: false,
-    });
+  await apolloServer.start();
+  //Listen to GraphQL via express server
+  apolloServer.applyMiddleware({
+    app,
+    cors: false,
+  });
 
-    //Express port
-    app.listen(4000, "0.0.0.0"), () => {
-        console.log("Express Server started on localhost:4000")
-    };
+  //Express port
+  app.listen(4000, "0.0.0.0"), () => {
+    console.log("Express Server started on localhost:4000")
+  };
 };
 
 main().catch((err) => {
-    console.log(err);
+  console.log(err);
 });

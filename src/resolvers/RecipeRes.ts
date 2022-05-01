@@ -2,60 +2,13 @@ import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getManager } from "typeorm";
 import { UserSavedRecipes } from "../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../entities/Recipe";
-import { Ingredient } from "../entities/Ingredient";
-import { RecipeIngredients } from "../entities/joinTables/RecipeIngredients";
-import { RecipeSteps } from "../entities/joinTables/RecipeSteps";
-import { Step } from "../entities/Step";
 import { throwAuthError } from "../middleware/checkAuth";
-import { ServerContext, RecipeInput } from "../types";
+import { ServerContext } from "../types";
+import { RecipeAdder } from "./helpers/recipeAdder";
+import { RecipeDeleter } from "./helpers/recipeDeleter";
+import { RecipeUpdater } from "./helpers/recipeUpdater";
 import { PaginatedRecipe } from "./helpers/_@_ObjectTypes";
-import { User } from "../entities/User";
-
-const addRecipe = async (input: RecipeInput, author: string): Promise<number> => {
-
-  console.log("addRecipe called")
-
-  const newRecipe = await Recipe.create({
-      recipe_title: input.recipe_title,
-      external_author: author,
-      recipe_desc: input.recipe_desc,
-      prep_time_minutes: input.prep_time_minutes,
-      cook_time_minutes: input.cook_time_minutes,
-      total_time_minutes: input.prep_time_minutes + input.cook_time_minutes,
-      footnotes: input.footnotes,
-      original_url: input.original_url,
-      photo_url: input.photo_url,
-      rating_stars: undefined,
-      review_count: "0"
-  }).save();
-
-  for (let i = 0; i < input.ingredients.length; i++) {
-      const ingredient = await Ingredient.create({
-          ingredient_name: input.ingredients[i].ingredient,
-          ingredient_unit: input.ingredients[i].unit,
-          ingredient_qty: input.ingredients[i].quantity
-      }).save();
-
-      await RecipeIngredients.create({
-          recipe_id: newRecipe.id,
-          ingredient_id: ingredient.id
-      }).save();
-  };
-
-  for (let i = 0; i < input.instructions.length; i++) {
-      const instruction = await Step.create({
-          step_desc: input.instructions[i].step_desc,
-      }).save();
-
-      await RecipeSteps.create({
-          recipe_id: newRecipe.id,
-          step_id: instruction.id
-      }).save();
-  };
-
-  console.log(newRecipe.recipe_title);
-  return newRecipe.id
-}
+import { DeleteRequest, RecipeInput } from "./ResTypes";
 
 @Resolver(Recipe)
 export class RecipeResolver {
@@ -216,7 +169,7 @@ export class RecipeResolver {
   async deleteSavedRecipe(
     @Arg("recipe_id") recipe_id: number,
     @Ctx() { req }: ServerContext
-  ): Promise<Boolean> {
+  ): Promise<Boolean | DeleteRequest> {
     const user_id: number = parseInt(req.session.userId);
 
     // throw error on endpoint if user is not authenticated
@@ -227,59 +180,42 @@ export class RecipeResolver {
 
     await UserSavedRecipes.delete({ user_id: user_id, recipe_id: recipe_id });
     return true;
-  }
-
-  // **** NOT USED **** // 
-
-
-  //Update Existing Recipe
-  // @Mutation(() => Recipe)
-  // async updateRecipe(
-  //   @Arg("id") id: number,
-  //   @Arg("input") recipe_input: RecipeInput
-  // ): Promise<Recipe | undefined> {
-  //   const recipe = await Recipe.findOne(id);
-  //   if (!recipe) {
-  //     return undefined;
-  //   }
-  //   Object.assign(recipe, recipe_input);
-  //   await recipe.save();
-  //   return recipe;
-  // }
-
-  //Delete Owned Recipe
-  // @Mutation(() => Recipe)
-  // async deleteOwnedRecipe(
-  //   @Arg("id") id: number
-  // ): Promise<Boolean> {
-  //   await UserSavedRecipes.delete(id);
-  //   await Recipe.delete(id);
-  //   return true;
-  // }
+  };
 
   //Add New Recipe
-  @Mutation(() => Recipe)
+  @Mutation(() => Boolean)
   async addNewRecipe(
-    @Arg("input") input: RecipeInput, 
+    @Arg("input") input: RecipeInput,
     @Ctx() { req }: ServerContext
-  ) {
-    // const newRecipe = await Recipe.create({...input}).save();
+  ): Promise<boolean> {
+    if (!req.session.userId) {
+      throw new Error("Not Authorized");
+    };
+    const response = await RecipeAdder(input);
+    return response;
+  };
 
-    console.log("addNewRecipe ran")
+  // Update Existing Recipe
+  @Mutation(() => Boolean)
+  async updateRecipe(
+    @Arg("id") id: number,
+    @Arg("input") recipe_input: RecipeInput,
+    @Ctx() { req }: ServerContext
+  ): Promise<Boolean> {
+    const req_id = parseInt(req.session.userId);
+    const response = await RecipeUpdater(id, recipe_input, req_id);
+    return response;
+  };
 
-    // Fine user by id
-    // const user = await User.findOne(parseInt(req.session.userId));
+  // Delete Owned Recipe
+  @Mutation(() => Boolean)
+  async deleteOwnedRecipe(
+    @Arg("recipe_id") recipe_id: number,
+    @Ctx() { req }: ServerContext
+  ): Promise<Boolean> {
+    const req_id = parseInt(req.session.userId);
+    const response = await RecipeDeleter(recipe_id, req_id);
 
-    // await RecipeAdder(newRecipe, input.ingredients, input.instructions, author);
-
-    const id = await addRecipe(input, "Tester");
-
-    return Recipe.findOne({
-      where: {
-        id
-      } 
-    })
+    return response;
   }
-
-
 }
