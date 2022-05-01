@@ -11,7 +11,7 @@ SELECT
     setweight(to_tsvector('english', recipe.recipe_title), 'A') || setweight(
         to_tsvector(
             'english',
-            coalesce(string_agg(ingredient.ingredient_name, 'B'))
+            coalesce(string_agg(ingredient.ingredient_name, ''))
         ),
         'B'
     ) || setweight(to_tsvector('english', recipe.recipe_desc), 'C') as document
@@ -76,7 +76,7 @@ SELECT
     setweight(to_tsvector('english', recipe.recipe_title), 'A') || setweight(
         to_tsvector(
             'english',
-            coalesce(string_agg(ingredient.ingredient_name, 'B'))
+            coalesce(string_agg(ingredient.ingredient_name, ''))
         ),
         'B'
     ) || setweight(to_tsvector('english', recipe.recipe_desc), 'C') as document
