@@ -1,6 +1,7 @@
 import { ApolloServerPluginLandingPageDisabled, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
+import "dotenv-safe/config";
 import express from "express";
 import fileUpload from 'express-fileupload';
 import session from "express-session";
@@ -38,32 +39,35 @@ const main = async () => {
 
   //Redis Session Store
   const RedisStore = require("connect-redis")(session);
-  const redis = new Redis();
+    const redis = new Redis(process.env.REDIS_URL);
 
-  app.use(
-    cors({
-      origin: "http://localhost:3000",
-      credentials: true,
-    }))
+    app.set('proxy', 1);
 
-  app.use(
-    session({
-      name: COOKIE_NAME,
-      store: new RedisStore({
-        client: redis,
-        disableTouch: true
-      }),
-      cookie: {
-        maxAge: ONE_DAY * 365 * 10, // 10 years 
-        httpOnly: true,
-        sameSite: "lax", //CSRF
-        secure: __prod__
-      },
-      saveUninitialized: false,
-      secret: "random-secret",
-      resave: false
-    })
-  )
+    app.use(
+        cors({
+            origin: process.env.FRONTEND_TARGET,
+            credentials: true,
+        }))
+
+      app.use(
+        session({
+            name: COOKIE_NAME,
+            store: new RedisStore({
+                client: redis,
+                disableTouch: true
+            }),
+            cookie: {
+                maxAge: ONE_DAY * 365 * 10, // 10 years 
+                httpOnly: true,
+                sameSite: "lax", //CSRF
+                secure: __prod__,
+                domain: __prod__ ? '.findmesome.recipes' : 'http://localhost:3000',
+            },
+            saveUninitialized: false,
+            secret: process.env.COOKIE_SECRET,
+            resave: false
+        })
+    )
 
   app.use(fileUpload());
   // app.use(bodyParser);
@@ -156,21 +160,14 @@ const main = async () => {
         payload: {},
       });
     }
-
-    //Store in redis with prefix and recipe-id as key ===
-
-    //Wait for user to submit recipe via graphql
-    //upload to cloudinary
-    //wait for link from cloudinary
-    //save recipe with cloudinary link
-
+    
     return res.status(200).send('Upload complete');
   })
 
   //Express port
-  app.listen(4000, "0.0.0.0"), () => {
-    console.log("Express Server started on localhost:4000")
-  };
+    app.listen(parseInt(process.env.PORT)), () => {
+        console.log("Express Server started on: " + process.env.PORT)
+    };
 };
 
 main().catch((err) => {
