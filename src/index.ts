@@ -8,7 +8,7 @@ import Redis from "ioredis";
 import { buildSchema } from "type-graphql";
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
 import { createConnection, getConnection } from "typeorm";
-import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
+import { COOKIE_NAME, IMAGE_UPLOAD_PREFIX, ONE_DAY, __prod__ } from "./constants";
 import { SearchResolver } from './resolvers/ft_search/searchRes';
 import { RecipeResolver } from "./resolvers/RecipeRes";
 import { UserResolver } from "./resolvers/UserRes";
@@ -18,6 +18,7 @@ import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
+import fs from 'fs';
 import { handleImageUpload } from './utils/imageUploader';
 // import { loadDb } from "./DatabaseLoader/loadDB";
 
@@ -105,39 +106,51 @@ const main = async () => {
     cors: false,
   });
 
-  app.post('/upload-image', async (req, res) => {
+  app.post('/image-upload/:uuid', async (req, res) => {
     try {
       if (!req.files) {
-        res.send({
+        return res.send({
           status: false,
           message: "There was no file found in request",
           payload: {},
         });
       } else {
-        const filePath: string = '../tempImg'
+        const uuid = req.params.uuid;
+        console.log(uuid);
+
         let file: any = req.files.file;
-        let fileName: string = file.name;
+        let fileName = file.name;
+        let filePath = `${process.cwd()}/tempImg/${fileName}`;
 
         //Save image to local disk
-        file.mv(filePath);
+        await fs.writeFile(filePath, file.data, () => {
+          console.log("Local Save");
+        });
 
         //upload logic
-        await handleImageUpload(filePath, fileName);
+        const imgUrl = await handleImageUpload(filePath);
+        console.log(imgUrl);
 
-        res.send({
+
+        await redis.set(IMAGE_UPLOAD_PREFIX + uuid, imgUrl, 'ex', 1000 * 60 * 5);
+        console.log(IMAGE_UPLOAD_PREFIX + uuid);
+
+
+        return res.send({
           status: true,
           message: "File was uploaded successfuly",
           payload: {
             name: file.name,
             mimetype: file.mimetype,
             size: file.size,
-            url: "https://my-ftp-server.com/bjYJGFYgjfVGHVb",
           },
         })
 
       }
     } catch (err) {
-      res.status(500).send({
+      console.log(err);
+
+      return res.status(500).send({
         status: false,
         message: "Unexpected problem",
         payload: {},

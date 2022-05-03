@@ -5,7 +5,6 @@ import { UserSavedRecipes } from "../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../entities/Recipe";
 import { throwAuthError } from "../middleware/checkAuth";
 import { ServerContext } from "../types";
-import { handleImageUpload } from "../utils/imageUploader";
 import { RecipeAdder } from "./helpers/recipeAdder";
 import { RecipeDeleter } from "./helpers/recipeDeleter";
 import { RecipeUpdater } from "./helpers/recipeUpdater";
@@ -188,20 +187,16 @@ export class RecipeResolver {
   @Mutation(() => Boolean)
   async addNewRecipe(
     @Arg("input") input: RecipeInput,
+    @Arg("uuid") uuid: string,
     @Ctx() { req, redis }: ServerContext
   ): Promise<boolean> {
     if (!req.session.userId) {
       throw new Error("Not Authorized");
     };
-    const imageWithMeta = await redis.get(IMAGE_UPLOAD_PREFIX + input.photo_url)
+    const url = await redis.get(IMAGE_UPLOAD_PREFIX + uuid)
+    console.log("redis get: " + IMAGE_UPLOAD_PREFIX + uuid);
 
-    let url = "";
-
-    if (imageWithMeta) {
-      url = await handleImageUpload(imageWithMeta)
-    }
-
-    const response = await RecipeAdder(input, url);
+    const response = await RecipeAdder(input, url!);
     return response;
   };
 
