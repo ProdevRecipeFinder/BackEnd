@@ -17,7 +17,7 @@ import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
-// import { loadDb } from "./DatabaseLoader/loadDB";
+ //import { loadDb } from "./DatabaseLoader/loadDB";
 
 
 const main = async () => {
@@ -28,7 +28,7 @@ const main = async () => {
   //Auto-run all pending migrations
   await conn.runMigrations();
 
-  // await loadDb();
+   //await loadDb();
 
   //Express back-end server
   const app = express();
