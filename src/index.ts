@@ -8,7 +8,7 @@ import Redis from "ioredis";
 import { buildSchema } from "type-graphql";
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
 import { createConnection, getConnection } from "typeorm";
-import { COOKIE_NAME, IMAGE_UPLOAD_PREFIX, ONE_DAY, __prod__ } from "./constants";
+import { COOKIE_NAME, ONE_DAY, __prod__ } from "./constants";
 import { SearchResolver } from './resolvers/ft_search/searchRes';
 import { RecipeResolver } from "./resolvers/RecipeRes";
 import { UserResolver } from "./resolvers/UserRes";
@@ -18,7 +18,7 @@ import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { TagsLoader } from './utils/dataLoaders/tagsLoader';
-import { convertToBase64 } from './utils/imageUploader';
+import { handleImageUpload } from './utils/imageUploader';
 // import { loadDb } from "./DatabaseLoader/loadDB";
 
 
@@ -106,21 +106,43 @@ const main = async () => {
   });
 
   app.post('/upload-image', async (req, res) => {
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send('No files were uploaded.');
+    try {
+      if (!req.files) {
+        res.send({
+          status: false,
+          message: "There was no file found in request",
+          payload: {},
+        });
+      } else {
+        const filePath: string = '../tempImg'
+        let file: any = req.files.file;
+        let fileName: string = file.name;
+
+        //Save image to local disk
+        file.mv(filePath);
+
+        //upload logic
+        await handleImageUpload(filePath, fileName);
+
+        res.send({
+          status: true,
+          message: "File was uploaded successfuly",
+          payload: {
+            name: file.name,
+            mimetype: file.mimetype,
+            size: file.size,
+            url: "https://my-ftp-server.com/bjYJGFYgjfVGHVb",
+          },
+        })
+
+      }
+    } catch (err) {
+      res.status(500).send({
+        status: false,
+        message: "Unexpected problem",
+        payload: {},
+      });
     }
-    // const recipe_id = req.body.recipe_id
-    const reqJSON = JSON.stringify(req.files.file);
-    const imageJSON = JSON.parse(reqJSON);
-    const filename = imageJSON.name;
-    const imageData = JSON.stringify(imageJSON.data.data[0]);
-    console.log(imageJSON);
-
-    const base64Img = convertToBase64(imageData);
-    console.log(base64Img);
-
-
-    await redis.set(IMAGE_UPLOAD_PREFIX + filename, base64Img, 'ex', 1000 * 60 * 20);
 
     //Store in redis with prefix and recipe-id as key ===
 
