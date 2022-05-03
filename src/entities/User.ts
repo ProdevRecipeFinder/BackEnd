@@ -1,8 +1,6 @@
-import { Ctx, Field, ObjectType } from "type-graphql";
+import { Field, ObjectType } from "type-graphql";
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { ServerContext } from "../types";
 import { RecipeAuthors } from "./joinTables/RecipeAuthor";
-import { Recipe } from "./Recipe";
 import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
 
 
@@ -26,6 +24,10 @@ export class User extends BaseEntity {
     password!: string;
 
     @Field()
+    @Column()
+    theme!: string;
+
+    @Field()
     @CreateDateColumn()
     created_at: Date;
 
@@ -38,9 +40,4 @@ export class User extends BaseEntity {
 
     @OneToMany(() => RecipeAuthors, ra => ra.user)
     ownRecipeConnection: Promise<RecipeAuthors[]>
-
-    @Field(() => [Recipe], { nullable: true })
-    async savedRecipes(@Ctx() { recipeLoader }: ServerContext): Promise<Recipe[]> {
-        return recipeLoader!.load(this.id)
-    }
 }

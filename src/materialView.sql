@@ -1,21 +1,27 @@
 -- Create Materialized view to reference appropriate tables and columns to search
 
 CREATE MATERIALIZED VIEW search_index AS
-SELECT recipe.id,
-        recipe.recipe_title,
-        recipe.recipe_desc,
-        recipe.photo_url,
-        recipe.rating_stars,
-        recipe.review_count,
-        setweight(to_tsvector('english', recipe.recipe_title), 'A') 
-        || 
-        setweight(to_tsvector('english', recipe.recipe_desc), 'C') 
-        || 
-        setweight(to_tsvector('english', coalesce(string_agg(ingredient.ingredient_name, ''))), 'B') as document
-FROM recipe
-JOIN recipe_ingredients ON recipe_ingredients.recipe_id = recipe_ingredients.ingredient_id
-JOIN ingredient ON ingredient.id = recipe_ingredients.ingredient_id
-GROUP BY recipe.id;
+SELECT
+    recipe.id,
+    recipe.recipe_title,
+    recipe.recipe_desc,
+    recipe.photo_url,
+    recipe.rating_stars,
+    recipe.review_count,
+    setweight(to_tsvector('english', recipe.recipe_title), 'A') || setweight(
+        to_tsvector(
+            'english',
+            coalesce(string_agg(ingredient.ingredient_name, ''))
+        ),
+        'B'
+    ) || setweight(to_tsvector('english', recipe.recipe_desc), 'C') as document
+FROM
+recipe, ingredient, recipe_ingredients
+WHERE
+	recipe.id = recipe_ingredients.recipe_id
+	AND
+	ingredient.id = recipe_ingredients.ingredient_id
+	GROUP BY recipe.id
 
 -- Add search index column to table
 
@@ -27,7 +33,7 @@ CREATE OR REPLACE FUNCTION refresh_search_idx()
 RETURNS TRIGGER LANGUAGE plpgsql
 AS $$
 BEGIN
-REFRESH MATERIALIZED VIEW CONCURRENTLY search_index;
+REFRESH MATERIALIZED VIEW search_index;
 RETURN NULL;
 END $$;
 
@@ -60,27 +66,33 @@ CREATE TRIGGER refresh_search_idx
 await queryRunner.query(`DROP MATERIALIZED VIEW "public"."search_index" CASCADE;`);
 await queryRunner.query(`DROP FUNCTION "public".refresh_search_idx() CASCADE;`);
 await queryRunner.query(`CREATE MATERIALIZED VIEW search_index AS
-SELECT recipe.id,
-        recipe.recipe_title,
-        recipe.recipe_desc,
-        recipe.photo_url,
-        recipe.rating_stars,
-        recipe.review_count,
-        setweight(to_tsvector('english', recipe.recipe_title), 'A') 
-        || 
-        setweight(to_tsvector('english', recipe.recipe_desc), 'C') 
-        || 
-        setweight(to_tsvector('english', coalesce(string_agg(ingredient.ingredient_name, ''))), 'B') as document
-FROM recipe
-JOIN recipe_ingredients ON recipe_ingredients.recipe_id = recipe_ingredients.ingredient_id
-JOIN ingredient ON ingredient.id = recipe_ingredients.ingredient_id
-GROUP BY recipe.id;`);
+SELECT
+    recipe.id,
+    recipe.recipe_title,
+    recipe.recipe_desc,
+    recipe.photo_url,
+    recipe.rating_stars,
+    recipe.review_count,
+    setweight(to_tsvector('english', recipe.recipe_title), 'A') || setweight(
+        to_tsvector(
+            'english',
+            coalesce(string_agg(ingredient.ingredient_name, ''))
+        ),
+        'B'
+    ) || setweight(to_tsvector('english', recipe.recipe_desc), 'C') as document
+FROM
+recipe, ingredient, recipe_ingredients
+WHERE
+	recipe.id = recipe_ingredients.recipe_id
+	AND
+	ingredient.id = recipe_ingredients.ingredient_id
+	GROUP BY recipe.id`);
         await queryRunner.query(`CREATE INDEX idx_ft_search ON search_index USING gin(document);`);
         await queryRunner.query(`CREATE OR REPLACE FUNCTION refresh_search_idx()
         RETURNS TRIGGER LANGUAGE plpgsql
         AS $$
         BEGIN
-        REFRESH MATERIALIZED VIEW CONCURRENTLY search_index;
+        REFRESH MATERIALIZED VIEW search_index;
         RETURN NULL;
         END $$;`);
         await queryRunner.query(`CREATE TRIGGER refresh_search_idx

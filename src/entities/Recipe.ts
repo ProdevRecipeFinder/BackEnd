@@ -16,102 +16,102 @@ import { Step } from "./Step";
 @Entity() // For TypeORM
 export class Recipe extends BaseEntity {
 
-    @Field()
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @Field()
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Field()
-    @Column()
-    recipe_title!: string;
+  @Field()
+  @Column()
+  recipe_title!: string;
 
-    @Column({ nullable: true })
-    external_author: string;
+  @Column({ nullable: true })
+  external_author: string;
 
-    @Field()
-    @Column()
-    recipe_desc!: string;
+  @Field()
+  @Column()
+  recipe_desc!: string;
 
-    @Field()
-    @Column()
-    prep_time_minutes!: number;
+  @Field()
+  @Column()
+  prep_time_minutes!: number;
 
-    @Field()
-    @Column()
-    cook_time_minutes!: number;
+  @Field()
+  @Column()
+  cook_time_minutes!: number;
 
-    @Field()
-    @Column()
-    total_time_minutes!: number;
+  @Field()
+  @Column()
+  total_time_minutes!: number;
 
-    @Field(() => [String])
-    @Column("text", { array: true, nullable: true })
-    footnotes: string[];
+  @Field(() => [String])
+  @Column("text", { array: true, nullable: true })
+  footnotes: string[];
 
-    @Field()
-    @Column({ nullable: true })
-    original_url: string;
+  @Field()
+  @Column({ nullable: true })
+  original_url: string;
 
-    @Field()
-    @Column({ nullable: true })
-    photo_url: string;
+  @Field()
+  @Column({ nullable: true })
+  photo_url: string;
 
-    @Field()
-    @Column({ nullable: true })
-    rating_stars: string;
+  @Field()
+  @Column({ nullable: true })
+  rating_stars: string;
 
-    @Field()
-    @Column({ nullable: true })
-    review_count: string;
+  @Field()
+  @Column({ nullable: true })
+  review_count: string;
 
-    @Field()
-    @CreateDateColumn()
-    created_at!: Date
+  @Field()
+  @CreateDateColumn()
+  created_at!: Date
 
-    @Field()
-    @UpdateDateColumn()
-    updated_at!: Date
+  @Field()
+  @UpdateDateColumn()
+  updated_at!: Date
 
-    @OneToMany(() => UserSavedRecipes, ur => ur.recipe)
-    userConnection: Promise<UserSavedRecipes[]>
+  @OneToMany(() => UserSavedRecipes, ur => ur.recipe)
+  userConnection: Promise<UserSavedRecipes[]>
 
-    @OneToMany(() => RecipeAuthors, ra => ra.recipe)
-    authorConnection: Promise<RecipeAuthors[]>
+  @OneToMany(() => RecipeAuthors, ra => ra.recipe)
+  authorConnection: Promise<RecipeAuthors[]>
 
-    @OneToMany(() => RecipeIngredients, ri => ri.recipe)
-    ingredientConnection: Promise<RecipeIngredients[]>;
+  @OneToMany(() => RecipeIngredients, ri => ri.recipe)
+  ingredientConnection: Promise<RecipeIngredients[]>;
 
-    @OneToMany(() => RecipeSteps, rs => rs.recipe)
-    stepConnection: Promise<RecipeSteps[]>
+  @OneToMany(() => RecipeSteps, rs => rs.recipe)
+  stepConnection: Promise<RecipeSteps[]>
 
-    @OneToMany(() => RecipeTags, rt => rt.tag)
-    tagConnection: Promise<RecipeTags[]>
+  @OneToMany(() => RecipeTags, rt => rt.tag)
+  tagConnection: Promise<RecipeTags[]>
 
-    @Field(() => [User])
-    async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[]> {
+  @Field(() => [User])
+  async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[]> {
 
-        if (this.external_author) {
-            return [
-                {
-                    user_name: this.external_author,
-                }
-            ] as unknown as [User];
+    if (this.external_author !== null) {
+      return [
+        {
+          user_name: this.external_author,
         }
-        return authorLoader.load(this.id);
+      ] as unknown as [User];
     }
+    return authorLoader.load(this.id);
+  }
 
-    @Field(() => [Ingredient])
-    async recipeIngredients(@Ctx() { ingredientLoader }: ServerContext): Promise<Ingredient[]> {
-        return ingredientLoader.load(this.id);
-    }
+  @Field(() => [Ingredient], { nullable: true })
+  async recipeIngredients(@Ctx() { ingredientLoader }: ServerContext): Promise<Ingredient[]> {
+    return await ingredientLoader.load(this.id);
+  }
 
-    @Field(() => [Step])
-    async recipeSteps(@Ctx() { stepLoader }: ServerContext): Promise<Step[]> {
-        return stepLoader.load(this.id);
-    }
+  @Field(() => [Step], { nullable: true })
+  async recipeSteps(@Ctx() { stepLoader }: ServerContext): Promise<Step[]> {
+    return await stepLoader.load(this.id);
+  }
 
-    @Field(() => [Tag], { nullable: true })
-    async recipeTags(@Ctx() { tagsLoader }: ServerContext): Promise<Tag[]> {
-        return tagsLoader!.load(this.id);
-    }
+  @Field(() => [Tag], { nullable: true })
+  async recipeTags(@Ctx() { tagsLoader }: ServerContext): Promise<Tag[]> {
+    return tagsLoader!.load(this.id);
+  }
 
 }
