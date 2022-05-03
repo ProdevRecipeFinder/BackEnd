@@ -1,6 +1,7 @@
+import { RecipeAuthors } from "../../entities/joinTables/RecipeAuthor";
 import { UserSavedRecipes } from "../../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../../entities/Recipe";
-import { deleteAuthor, deleteIngredients, deleteSteps } from "./deleteSubRows";
+import { deleteIngredients, deleteSteps } from "./deleteSubRows";
 
 export const RecipeDeleter = async (id: number, req_id: number): Promise<boolean> => {
 
@@ -24,7 +25,9 @@ export const RecipeDeleter = async (id: number, req_id: number): Promise<boolean
 
   await deleteSteps(recipe.id);
 
-  await deleteAuthor(recipe.id);
+  await RecipeAuthors.delete({
+    recipe_id: id
+  })
 
   await UserSavedRecipes.delete({
     recipe_id: recipe.id
