@@ -8,7 +8,7 @@ export const RecipeDeleter = async (id: number, req_id: number): Promise<boolean
   if (!recipe) {
     return false;
   };
-  const author = await UserSavedRecipes.findOne({
+  const author = await UserSavedRecipes.findOne({ //make sure owner has saved recipe in table
     where: {
       recipe_id: recipe.id
     }

@@ -3,7 +3,7 @@ import { RecipeInput } from "../ResTypes";
 import { addIngredients, addSteps } from "./addSubRows";
 
 
-export const RecipeAdder = async (input: RecipeInput, newUrl: string): Promise<boolean> => {
+export const RecipeAdder = async (input: RecipeInput, newUrl: string): Promise<number> => {
 
   const newRecipe = await Recipe.create({
     recipe_title: input.recipe_title,
@@ -21,5 +21,6 @@ export const RecipeAdder = async (input: RecipeInput, newUrl: string): Promise<b
 
   await addIngredients(input.ingredients, newRecipe.id);
   await addSteps(input.instructions, newRecipe.id);
-  return true;
+
+  return newRecipe.id;
 }

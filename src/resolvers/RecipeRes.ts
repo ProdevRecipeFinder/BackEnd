@@ -1,6 +1,7 @@
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getManager } from "typeorm";
 import { IMAGE_UPLOAD_PREFIX } from "../constants";
+import { RecipeAuthors } from "../entities/joinTables/RecipeAuthor";
 import { UserSavedRecipes } from "../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../entities/Recipe";
 import { throwAuthError } from "../middleware/checkAuth";
@@ -190,14 +191,23 @@ export class RecipeResolver {
     @Arg("uuid") uuid: string,
     @Ctx() { req, redis }: ServerContext
   ): Promise<boolean> {
-    if (!req.session.userId) {
+    const userId = parseInt(req.session.userId);
+    if (!userId) {
       throw new Error("Not Authorized");
     };
-    const url = await redis.get(IMAGE_UPLOAD_PREFIX + uuid)
-    console.log("redis get: " + IMAGE_UPLOAD_PREFIX + uuid);
+    const url = await redis.get(IMAGE_UPLOAD_PREFIX + uuid);
 
-    const response = await RecipeAdder(input, url!);
-    return response;
+    const recipeId = await RecipeAdder(input, url!);
+    UserSavedRecipes.create({
+      user_id: userId,
+      recipe_id: recipeId
+    }).save();
+    RecipeAuthors.create({
+      recipe_id: recipeId,
+      user_id: userId
+    }).save();
+
+    return true;
   };
 
   // Update Existing Recipe

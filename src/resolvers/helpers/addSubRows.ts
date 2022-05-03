@@ -26,7 +26,6 @@ export const addSteps = async (instructions: InstructionInputType[], id: number)
     const instruction = await Step.create({
       step_desc: instructions[i].step_desc,
     }).save();
-    console.log(instruction.step_desc);
 
 
     await RecipeSteps.create({

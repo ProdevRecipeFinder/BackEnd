@@ -89,9 +89,10 @@ export class Recipe extends BaseEntity {
   @Field(() => [User])
   async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[]> {
 
-    if (this.external_author !== null) {
+    if (this.external_author !== "") {
       return [
         {
+          id: -1,
           user_name: this.external_author,
         }
       ] as unknown as [User];
