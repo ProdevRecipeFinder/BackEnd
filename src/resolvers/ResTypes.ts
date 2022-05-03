@@ -1,5 +1,4 @@
-import { Field, InputType, ObjectType } from "type-graphql";
-import { User } from "../entities/User";
+import { Field, InputType } from "type-graphql";
 
 @InputType()
 export class RecipeInput {
@@ -106,26 +105,17 @@ export class LoginInfo {
   password!: string;
 }
 
-@ObjectType()
-export class UserResponse {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
+@InputType()
+export class VoteParams {
+  @Field()
+  recipe_id!: number;
+
+  @Field()
+  newStars!: number;
+
+  @Field()
+  prevVote!: boolean;
 
   @Field({ nullable: true })
-  user?: User;
-}
-
-@ObjectType()
-export class FieldError {
-  @Field()
-  field: string;
-
-  @Field()
-  message: string;
-}
-
-@ObjectType()
-export class DeleteRequest {
-  @Field()
-  request: boolean;
+  prevVoteValue!: number;
 }

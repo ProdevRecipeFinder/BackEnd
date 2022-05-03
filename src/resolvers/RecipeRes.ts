@@ -10,8 +10,8 @@ import { ServerContext } from "../types";
 import { RecipeAdder } from "./helpers/recipeAdder";
 import { RecipeDeleter } from "./helpers/recipeDeleter";
 import { RecipeUpdater } from "./helpers/recipeUpdater";
-import { PaginatedRecipe } from "./helpers/_@_ObjectTypes";
-import { DeleteRequest, RecipeInput } from "./ResTypes";
+import { DeleteRequest, PaginatedRecipe } from "./helpers/_@_ObjectTypes";
+import { RecipeInput, VoteParams } from "./ResTypes";
 
 @Resolver(Recipe)
 export class RecipeResolver {
@@ -209,8 +209,7 @@ export class RecipeResolver {
 
   @Mutation(() => Boolean)
   async voteOnRecipe(
-    @Arg("recipe_id") recipe_id: number,
-    @Arg("stars") stars: number,
+    @Arg("vote_params") voteParams: VoteParams,
     @Ctx() { req }: ServerContext
   ): Promise<Boolean | Error> {
     const user_id: number = parseInt(req.session.userId);
@@ -218,7 +217,7 @@ export class RecipeResolver {
     if (!user_id) {
       return throwAuthError();
     }
-    const recipe = await Recipe.findOne(recipe_id);
+    const recipe = await Recipe.findOne(voteParams.recipe_id);
 
     if (!recipe) {
       return false;
@@ -226,24 +225,52 @@ export class RecipeResolver {
     // Update Recipe Stats
     const reviewCount = parseInt(recipe.review_count);
     const ratingStars = parseInt(recipe.rating_stars);
-    const newRatingStars = ((ratingStars * reviewCount) + stars) / (reviewCount + 1);
+    if (!voteParams.prevVote) {
+      const newRatingStars = ((ratingStars * reviewCount) + voteParams.newStars) / (reviewCount + 1);
 
-    const newRecipe = {
-      ...recipe,
-      review_count: reviewCount + 1,
-      rating_stars: newRatingStars
+      const newRecipe = {
+        ...recipe,
+        review_count: reviewCount + 1,
+        rating_stars: newRatingStars
+      }
+      Object.assign(recipe, newRecipe);
+      await recipe.save();
+
+      //Save Vote Status to User
+
+      VoteStatus.create({
+        user_id: user_id,
+        recipe_id: voteParams.recipe_id,
+        rating_stars: voteParams.newStars
+      }).save();
+    } else if (voteParams.prevVoteValue) {
+      const newRatingStars = ((ratingStars * reviewCount) - voteParams.prevVoteValue + voteParams.newStars) / reviewCount;
+
+      const newRecipe = {
+        ...recipe,
+        rating_stars: newRatingStars
+      }
+      Object.assign(recipe, newRecipe);
+      await recipe.save();
+
+      const voteStatus = await VoteStatus.findOne({
+        where: {
+          user_id: user_id,
+          recipe_id: voteParams.recipe_id
+        }
+      });
+
+      if (!voteStatus) {
+        return false;
+      }
+      const newVoteStatus = {
+        ...voteStatus,
+        ratingStars: voteParams.newStars
+      };
+
+      Object.assign(voteStatus, newVoteStatus);
+      voteStatus.save();
     }
-    Object.assign(recipe, newRecipe);
-    await recipe.save();
-
-    //Save Vote Status to User
-
-    VoteStatus.create({
-      user_id: user_id,
-      recipe_id: recipe_id,
-      rating_stars: stars
-    }).save();
-
     return true;
   }
 
