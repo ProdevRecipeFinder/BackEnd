@@ -1,15 +1,13 @@
 import { Ctx, Field, ObjectType } from "type-graphql";
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ServerContext } from "../types";
-import { RecipeAuthors } from "./joinTables/RecipeAuthor";
-import { RecipeTags } from "./joinTables/RecipeTags";
-import { Tag } from "./Tag";
-import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
-import { RecipeIngredients } from "./joinTables/RecipeIngredients";
-import { User } from "./User";
 import { Ingredient } from "./Ingredient";
+import { RecipeAuthors } from "./joinTables/RecipeAuthor";
+import { RecipeIngredients } from "./joinTables/RecipeIngredients";
 import { RecipeSteps } from "./joinTables/RecipeSteps";
+import { UserSavedRecipes } from "./joinTables/UserSavedRecipe";
 import { Step } from "./Step";
+import { User } from "./User";
 
 
 @ObjectType() // For type-graphql API
@@ -83,9 +81,6 @@ export class Recipe extends BaseEntity {
   @OneToMany(() => RecipeSteps, rs => rs.recipe)
   stepConnection: Promise<RecipeSteps[]>
 
-  @OneToMany(() => RecipeTags, rt => rt.tag)
-  tagConnection: Promise<RecipeTags[]>
-
   @Field(() => [User])
   async recipeAuthors(@Ctx() { authorLoader }: ServerContext): Promise<User[]> {
 
@@ -109,10 +104,4 @@ export class Recipe extends BaseEntity {
   async recipeSteps(@Ctx() { stepLoader }: ServerContext): Promise<Step[]> {
     return await stepLoader.load(this.id);
   }
-
-  @Field(() => [Tag], { nullable: true })
-  async recipeTags(@Ctx() { tagsLoader }: ServerContext): Promise<Tag[]> {
-    return tagsLoader!.load(this.id);
-  }
-
 }

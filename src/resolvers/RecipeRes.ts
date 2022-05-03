@@ -4,6 +4,7 @@ import { IMAGE_UPLOAD_PREFIX } from "../constants";
 import { RecipeAuthors } from "../entities/joinTables/RecipeAuthor";
 import { UserSavedRecipes } from "../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../entities/Recipe";
+import { VoteStatus } from "../entities/VoteStatus";
 import { throwAuthError } from "../middleware/checkAuth";
 import { ServerContext } from "../types";
 import { RecipeAdder } from "./helpers/recipeAdder";
@@ -19,6 +20,29 @@ export class RecipeResolver {
   @Query(() => [Recipe], { nullable: true })
   async getAllRecipes() {
     return await Recipe.find();
+  }
+
+  @Query(() => Number)
+  async getVoteStatus(
+    @Arg("recipe_id") recipe_id: number,
+    @Ctx() { req }: ServerContext
+  ): Promise<Number | Error> {
+    const userId = parseInt(req.session.userId)
+    if (!userId) {
+      return throwAuthError();
+    }
+    const foundVote = await VoteStatus.findOne({
+      where: {
+        recipe_id: recipe_id,
+        user_id: userId
+      }
+    });
+
+    if (!foundVote) {
+      return -1;
+    }
+
+    return foundVote.rating_stars
   }
 
   //Returns one recipe
@@ -199,16 +223,27 @@ export class RecipeResolver {
     if (!recipe) {
       return false;
     }
+    // Update Recipe Stats
     const reviewCount = parseInt(recipe.review_count);
     const ratingStars = parseInt(recipe.rating_stars);
+    const newRatingStars = ((ratingStars * reviewCount) + stars) / (reviewCount + 1);
 
     const newRecipe = {
       ...recipe,
       review_count: reviewCount + 1,
-      rating_stars: ratingStars + stars
+      rating_stars: newRatingStars
     }
     Object.assign(recipe, newRecipe);
     await recipe.save();
+
+    //Save Vote Status to User
+
+    VoteStatus.create({
+      user_id: user_id,
+      recipe_id: recipe_id,
+      rating_stars: stars
+    }).save();
+
     return true;
   }
 

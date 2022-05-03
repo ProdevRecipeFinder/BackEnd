@@ -17,7 +17,6 @@ import typeormConfig from "./typeorm-config";
 import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
-import { TagsLoader } from './utils/dataLoaders/tagsLoader';
 import fs from 'fs';
 import { handleImageUpload } from './utils/imageUploader';
 // import { loadDb } from "./DatabaseLoader/loadDB";
@@ -94,8 +93,7 @@ const main = async () => {
       redis,
       authorLoader: AuthorsLoader(),
       ingredientLoader: IngredientsLoader(),
-      stepLoader: StepsLoader(),
-      tagsLoader: TagsLoader()
+      stepLoader: StepsLoader()
     })
   });
 
