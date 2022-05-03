@@ -1,9 +1,11 @@
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getManager } from "typeorm";
+import { IMAGE_UPLOAD_PREFIX } from "../constants";
 import { UserSavedRecipes } from "../entities/joinTables/UserSavedRecipe";
 import { Recipe } from "../entities/Recipe";
 import { throwAuthError } from "../middleware/checkAuth";
 import { ServerContext } from "../types";
+import { handleImageUpload } from "../utils/imageUploader";
 import { RecipeAdder } from "./helpers/recipeAdder";
 import { RecipeDeleter } from "./helpers/recipeDeleter";
 import { RecipeUpdater } from "./helpers/recipeUpdater";
@@ -186,12 +188,20 @@ export class RecipeResolver {
   @Mutation(() => Boolean)
   async addNewRecipe(
     @Arg("input") input: RecipeInput,
-    @Ctx() { req }: ServerContext
+    @Ctx() { req, redis }: ServerContext
   ): Promise<boolean> {
     if (!req.session.userId) {
       throw new Error("Not Authorized");
     };
-    const response = await RecipeAdder(input);
+    const imageWithMeta = await redis.get(IMAGE_UPLOAD_PREFIX + input.photo_url)
+
+    let url = "";
+
+    if (imageWithMeta) {
+      url = await handleImageUpload(imageWithMeta)
+    }
+
+    const response = await RecipeAdder(input, url);
     return response;
   };
 

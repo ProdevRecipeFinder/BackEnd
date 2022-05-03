@@ -3,7 +3,8 @@ import { RecipeInput } from "../ResTypes";
 import { addIngredients, addSteps } from "./addSubRows";
 
 
-export const RecipeAdder = async (input: RecipeInput): Promise<boolean> => {
+export const RecipeAdder = async (input: RecipeInput, newUrl: string): Promise<boolean> => {
+
   const newRecipe = await Recipe.create({
     recipe_title: input.recipe_title,
     external_author: "",
@@ -13,7 +14,7 @@ export const RecipeAdder = async (input: RecipeInput): Promise<boolean> => {
     total_time_minutes: input.prep_time_minutes + input.cook_time_minutes,
     footnotes: input.footnotes,
     original_url: input.original_url,
-    photo_url: input.photo_url,
+    photo_url: newUrl,
     rating_stars: "0",
     review_count: "0"
   }).save();

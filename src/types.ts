@@ -14,3 +14,7 @@ export type ServerContext = {
   stepLoader?: ReturnType<typeof StepsLoader>
   tagsLoader?: ReturnType<typeof TagsLoader>;
 };
+
+export type UploadRequest = {
+  image: File;
+}
