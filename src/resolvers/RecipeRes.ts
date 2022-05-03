@@ -171,18 +171,47 @@ export class RecipeResolver {
   async deleteSavedRecipe(
     @Arg("recipe_id") recipe_id: number,
     @Ctx() { req }: ServerContext
-  ): Promise<Boolean | DeleteRequest> {
+  ): Promise<Boolean | DeleteRequest | Error> {
     const user_id: number = parseInt(req.session.userId);
 
     // throw error on endpoint if user is not authenticated
     if (!user_id) {
-      throwAuthError();
-      return false;
+      return throwAuthError();
     }
 
     await UserSavedRecipes.delete({ user_id: user_id, recipe_id: recipe_id });
     return true;
   };
+
+  @Mutation(() => Boolean)
+  async voteOnRecipe(
+    @Arg("recipe_id") recipe_id: number,
+    @Arg("stars") stars: number,
+    @Ctx() { req }: ServerContext
+  ): Promise<Boolean | Error> {
+    const user_id: number = parseInt(req.session.userId);
+    // throw error on endpoint if user is not authenticated
+    if (!user_id) {
+      return throwAuthError();
+    }
+    const recipe = await Recipe.findOne(recipe_id);
+
+    if (!recipe) {
+      return false;
+    }
+    const reviewCount = parseInt(recipe.review_count);
+    const ratingStars = parseInt(recipe.rating_stars);
+
+    const newRecipe = {
+      ...recipe,
+      review_count: reviewCount + 1,
+      rating_stars: ratingStars + stars
+    }
+    Object.assign(recipe, newRecipe);
+    await recipe.save();
+    return true;
+  }
+
 
   //Add New Recipe
   @Mutation(() => Boolean)
@@ -230,7 +259,6 @@ export class RecipeResolver {
   ): Promise<Boolean> {
     const req_id = parseInt(req.session.userId);
     const response = await RecipeDeleter(recipe_id, req_id);
-
     return response;
   }
 }
