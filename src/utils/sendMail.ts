@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import "dotenv/config";
 
-export async function sendMail(sendTo: string, subject: string, text: string) {
+export async function sendMail(sendTo: string, text: string) {
     let transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -14,7 +14,7 @@ export async function sendMail(sendTo: string, subject: string, text: string) {
     let info = await transporter.sendMail({
         from: '"Recipe Finder APP"',
         to: sendTo,
-        subject,
+        subject: "PASSWORD RESET",
         html: text,
     });
 

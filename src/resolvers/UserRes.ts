@@ -2,16 +2,14 @@ import argon2 from "argon2";
 import { Arg, Ctx, FieldResolver, Mutation, Query, Resolver, Root } from "type-graphql";
 import { getCustomRepository } from "typeorm";
 import { v4 } from "uuid";
-import { COOKIE_NAME, DELETE_ACCOUNT_PREFIX, FORGOT_PASS_PREFIX, ONE_DAY } from "../constants";
+import { COOKIE_NAME, FORGOT_PASS_PREFIX, ONE_DAY } from "../constants";
 import { User } from "../entities/User";
 import { UserRepository } from "../repositories/UserRepo";
 import { ServerContext } from "../types";
-import { DELETE_SUCCESS, EMAIL_TAKEN, OLD_PASS_INCORRECT, PASS_INCORRECT, TOKEN_ERR_GENERIC, TOKEN_INVALID, UNAME_NOTFOUND, UNAME_TAKEN } from "../utils/errorHandling/errorMsg";
+import { EMAIL_TAKEN, OLD_PASS_INCORRECT, PASS_INCORRECT, TOKEN_ERR_GENERIC, TOKEN_INVALID, UNAME_NOTFOUND, UNAME_TAKEN } from "../utils/errorHandling/errorMsg";
 import { validatePassword, validateRegister, validateUname } from "../utils/errorHandling/validateRegister";
 import { sendMail } from "../utils/sendMail";
-import { UserDeleter } from "./helpers/userDeleter";
 import { LoginInfo, RegInfo, UserResponse } from "./ResTypes";
-import loadHtml from "../utils/loadHtml";
 
 @Resolver(User)
 export class UserResolver {
@@ -65,7 +63,7 @@ export class UserResolver {
         }
 
         const hashedPass = await argon2.hash(user_info.password)
-        const user = User.create({ user_name: user_info.user_name, email: user_info.email, password: hashedPass, theme: "dark"});
+        const user = User.create({ user_name: user_info.user_name, email: user_info.email, password: hashedPass });
         await user.save();
 
         req.session.userId = user.id;
@@ -73,6 +71,7 @@ export class UserResolver {
     }
 
     //LOGIN
+
     @Mutation(() => UserResponse)
     async login(
         @Arg("user_info") user_info: LoginInfo,
@@ -177,12 +176,11 @@ export class UserResolver {
         }
         const token = v4();
         await redis.set(FORGOT_PASS_PREFIX + token, user.id, 'ex', ONE_DAY);
-          
-        const html = loadHtml(`${process.cwd()}/src/html/resetPassword.html`, `${process.env.CORS_ORIGIN}/reset-password/${token}`)
-        await sendMail(email, "[RecipeFinder] Please reset your password", html);
+        const html = `<ahref="${process.env.CORS_ORIGIN}/reset-password/${token}"/>`;
+        await sendMail(email, html);
         return true;
     }
- 
+
     @Mutation(() => UserResponse)
     async changeForgotPassword(
         @Arg("token") token: string,
@@ -207,44 +205,4 @@ export class UserResolver {
         req.session.userId = user.id;
         return { user };
     }
-
-    @Mutation(() => Boolean)
-    async requestDeleteAccount(
-        @Ctx() { req, redis }: ServerContext
-    ): Promise<Boolean> {
-        const user = await User.findOne(
-            {
-                id: parseInt(req.session.userId)
-            }
-        )
-        if (!user) {
-            return true;
-        }
-        const token = v4();
-        await redis.set(DELETE_ACCOUNT_PREFIX + token, user.id, 'ex', ONE_DAY);
-        const html = loadHtml(`${process.cwd()}/src/html/deleteAccount.html`, `${process.env.CORS_ORIGIN}/delete-account/${token}`)
-        await sendMail(user.email, "[RecipeFinder] Delete your account", html);
-        return true;
-    }
-
-    @Mutation(() => UserResponse)
-    async deleteAccount(
-        @Arg("token") token: string,
-        @Ctx() { redis }: ServerContext
-    ): Promise<UserResponse> {
-
-        const userId = await redis.get(DELETE_ACCOUNT_PREFIX + token);
-        if (!userId) {
-            return { errors: TOKEN_INVALID }
-        }
-        const user = await User.findOne(parseInt(userId));
-        if (!user) {
-            return { errors: TOKEN_ERR_GENERIC }
-        }
-
-        UserDeleter(user.id);
-
-        return { errors: DELETE_SUCCESS };
-    }
-
 }
