@@ -311,10 +311,13 @@ export class RecipeResolver {
   async updateRecipe(
     @Arg("id") id: number,
     @Arg("input") recipe_input: RecipeInput,
-    @Ctx() { req }: ServerContext
+    @Arg("uuid") uuid: string,
+    @Ctx() { req, redis }: ServerContext
   ): Promise<Boolean> {
-    const req_id = parseInt(req.session.userId);
-    const response = await RecipeUpdater(id, recipe_input, req_id);
+    const userId = parseInt(req.session.userId);
+    const url = await redis.get(IMAGE_UPLOAD_PREFIX + uuid);
+
+    const response = await RecipeUpdater(id, recipe_input, userId, url!);
     return response;
   };
 

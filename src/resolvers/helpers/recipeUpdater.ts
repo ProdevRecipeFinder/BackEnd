@@ -4,7 +4,7 @@ import { RecipeInput } from "../ResTypes";
 import { addIngredients, addSteps } from "./addSubRows";
 import { deleteIngredients, deleteSteps } from "./deleteSubRows";
 
-export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, req_id: number): Promise<boolean> => {
+export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, userId: number, newUrl: string): Promise<boolean> => {
   const recipe = await Recipe.findOne(id);
   if (!recipe) {
     return false;
@@ -17,7 +17,7 @@ export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, req_i
   if (!author) {
     return false;
   };
-  if (author.user_id !== req_id) {
+  if (author.user_id !== userId) {
     throw new Error("Not Authorized");
   };
 
@@ -28,6 +28,7 @@ export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, req_i
   await addSteps(recipe_input.instructions, recipe.id);
 
   Object.assign(recipe, recipe_input);
+  recipe.photo_url = newUrl;
   await recipe.save();
   return true;
 };
