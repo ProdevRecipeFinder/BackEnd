@@ -315,7 +315,11 @@ export class RecipeResolver {
     @Ctx() { req, redis }: ServerContext
   ): Promise<Boolean> {
     const userId = parseInt(req.session.userId);
-    const url = await redis.get(IMAGE_UPLOAD_PREFIX + uuid);
+    let url = await redis.get(IMAGE_UPLOAD_PREFIX + uuid);
+
+    if (uuid === "no-update") {
+      url = recipe_input.photo_url
+    }
 
     const response = await RecipeUpdater(id, recipe_input, userId, url!);
     return response;

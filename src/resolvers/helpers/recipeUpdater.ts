@@ -28,6 +28,8 @@ export const RecipeUpdater = async (id: number, recipe_input: RecipeInput, userI
   await addSteps(recipe_input.instructions, recipe.id);
 
   Object.assign(recipe, recipe_input);
+  console.log("new: " + newUrl);
+
   recipe.photo_url = newUrl;
   await recipe.save();
   return true;

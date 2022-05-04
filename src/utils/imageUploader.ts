@@ -8,7 +8,7 @@ export const handleImageUpload = async (filePath: string): Promise<string> => {
     api_secret: 'Dhw06qEYnTBuhCo3Ixj4ZLN_7r4'
   });
 
-  let url = "https://getstamped.co.uk/wp-content/uploads/WebsiteAssets/Placeholder.jpg";
+  let url = "";
 
   await cloudinary.uploader.upload(filePath, async function (error, image) {
     console.log("uploading");

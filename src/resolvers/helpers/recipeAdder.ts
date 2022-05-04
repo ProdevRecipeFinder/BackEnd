@@ -14,7 +14,7 @@ export const RecipeAdder = async (input: RecipeInput, newUrl: string): Promise<n
     total_time_minutes: input.prep_time_minutes + input.cook_time_minutes,
     footnotes: input.footnotes,
     original_url: input.original_url,
-    photo_url: newUrl,
+    photo_url: newUrl !== "no-update" ? newUrl : input.photo_url,
     rating_stars: "0",
     review_count: "0"
   }).save();

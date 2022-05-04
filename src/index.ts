@@ -125,10 +125,12 @@ const main = async () => {
           console.log("Local Save");
         });
 
+        let imgUrl = "no-update";
         //upload logic
-        const imgUrl = await handleImageUpload(filePath);
-        console.log(imgUrl);
-
+        if (uuid !== "no-update") {
+          imgUrl = await handleImageUpload(filePath);
+          console.log(imgUrl);
+        }
 
         await redis.set(IMAGE_UPLOAD_PREFIX + uuid, imgUrl, 'ex', 1000 * 60 * 5);
         console.log(IMAGE_UPLOAD_PREFIX + uuid);
