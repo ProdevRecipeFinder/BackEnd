@@ -19,6 +19,7 @@ import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
 import { handleImageUpload } from './utils/imageUploader';
+import "dotenv-safe/config";
 // import { loadDb } from "./DatabaseLoader/loadDB";
 
 
@@ -37,11 +38,13 @@ const main = async () => {
 
   //Redis Session Store
   const RedisStore = require("connect-redis")(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
+
+  app.set('proxy', 1);
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     }))
 
@@ -56,10 +59,11 @@ const main = async () => {
         maxAge: ONE_DAY * 365 * 10, // 10 years 
         httpOnly: true,
         sameSite: "lax", //CSRF
-        secure: __prod__
+        secure: __prod__,
+        domain: __prod__ ? ".findmesome.recipes" : undefined
       },
       saveUninitialized: false,
-      secret: "random-secret",
+      secret: process.env.COOKIE_SECRET,
       resave: false
     })
   )
@@ -168,7 +172,7 @@ const main = async () => {
   })
 
   //Express port
-  app.listen(4000, "0.0.0.0"), () => {
+  app.listen(parseInt(process.env.PORT)), () => {
     console.log("Express Server started on localhost:4000")
   };
 };

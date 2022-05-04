@@ -9,13 +9,11 @@ import { Recipe } from "./entities/Recipe";
 import { Step } from "./entities/Step";
 import { User } from "./entities/User";
 import { VoteStatus } from "./entities/VoteStatus";
+import "dotenv-safe/config";
 
 export default {
   type: "postgres",
-  database: "recipes_db",
-  username: "postgres",
-  password: "postgres",
-  // url:"postgresql://postgres:postgres@127.0.0.1:5432/recipes_db",
+  url: "postgresql://postgres:postgres@127.0.0.1:5432/recipes_db_deployment",
   synchronize: false,
   entities: [
     User,
