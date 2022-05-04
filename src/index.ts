@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 import fileUpload from 'express-fileupload';
 import session from "express-session";
+import fs from 'fs';
 import Redis from "ioredis";
 import { buildSchema } from "type-graphql";
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
@@ -17,7 +18,6 @@ import typeormConfig from "./typeorm-config";
 import { AuthorsLoader } from './utils/dataLoaders/authorLoader';
 import { IngredientsLoader } from './utils/dataLoaders/ingredientLoader';
 import { StepsLoader } from './utils/dataLoaders/stepLoader';
-import fs from 'fs';
 import { handleImageUpload } from './utils/imageUploader';
 // import { loadDb } from "./DatabaseLoader/loadDB";
 

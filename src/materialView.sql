@@ -8,13 +8,13 @@ SELECT
     recipe.photo_url,
     recipe.rating_stars,
     recipe.review_count,
-    setweight(to_tsvector('english', recipe.recipe_title), 'A') || setweight(
+    setweight(to_tsvector('auto', recipe.recipe_title), 'B') || setweight(
         to_tsvector(
-            'english',
-            coalesce(string_agg(ingredient.ingredient_name, ''))
+            'auto',
+            coalesce(string_agg(ingredient.ingredient_name, ' '))
         ),
-        'B'
-    ) || setweight(to_tsvector('english', recipe.recipe_desc), 'C') as document
+        'A'
+    ) || setweight(to_tsvector('auto', recipe.recipe_desc), 'C') as document
 FROM
 recipe, ingredient, recipe_ingredients
 WHERE
@@ -73,12 +73,12 @@ SELECT
     recipe.photo_url,
     recipe.rating_stars,
     recipe.review_count,
-    setweight(to_tsvector('english', recipe.recipe_title), 'A') || setweight(
+    setweight(to_tsvector('english', recipe.recipe_title), 'B') || setweight(
         to_tsvector(
             'english',
             coalesce(string_agg(ingredient.ingredient_name, ''))
         ),
-        'B'
+        'A'
     ) || setweight(to_tsvector('english', recipe.recipe_desc), 'C') as document
 FROM
 recipe, ingredient, recipe_ingredients

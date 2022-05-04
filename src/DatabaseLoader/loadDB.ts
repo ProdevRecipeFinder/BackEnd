@@ -6,7 +6,7 @@ import { Step } from "../entities/Step";
 import { DatabaseInput } from "./types";
 
 
-const db = require('../../../../output.json');
+const db = require('../../../output.json');
 
 export const loadDb = async () => {
 

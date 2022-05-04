@@ -12,21 +12,16 @@ export class SearchResolver {
     @Arg("limit", { nullable: true }) limit: number,
     @Arg("cursor", { nullable: true }) cursor: number
   ) {
-    console.log("called: " + search);
-
-    const keywords = search.split(" ");
+    const keywords = search.split(' ');
 
     let queryFormat: string = '';
+    let tempQuery = '';
 
-    //If only one search-term provided
-    if (keywords.length < 1) {
-      // If multiple search-terms provided
-      for (let i = 0; i < keywords.length; i++) {
-        queryFormat.concat(' ', keywords[i]);
-      }
-    } else {
-      queryFormat = search;
+    if (search) {
+      tempQuery = keywords.join("&");
+      queryFormat = tempQuery.toString();
     }
+
     let fetchLimit = 20;
     if (limit) {
       fetchLimit = Math.min(50, limit);
@@ -34,6 +29,7 @@ export class SearchResolver {
     const adjustedFetchLimit = fetchLimit + 1;
 
     const replacements: string[] = [];
+
 
     replacements.push(queryFormat);
     replacements.push(adjustedFetchLimit.toString())
