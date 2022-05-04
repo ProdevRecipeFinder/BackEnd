@@ -41,6 +41,7 @@ export class RecipeResolver {
     if (!foundVote) {
       return -1;
     }
+    console.log(foundVote);
 
     return foundVote.rating_stars
   }
@@ -224,9 +225,10 @@ export class RecipeResolver {
     }
     // Update Recipe Stats
     const reviewCount = parseInt(recipe.review_count);
-    const ratingStars = parseInt(recipe.rating_stars);
+    const rating_stars = parseInt(recipe.rating_stars);
     if (!voteParams.prevVote) {
-      const newRatingStars = ((ratingStars * reviewCount) + voteParams.newStars) / (reviewCount + 1);
+      const newRatingStars = ((rating_stars * reviewCount) + voteParams.new_stars) / (reviewCount + 1);
+      console.log("new vote");
 
       const newRecipe = {
         ...recipe,
@@ -241,10 +243,11 @@ export class RecipeResolver {
       VoteStatus.create({
         user_id: user_id,
         recipe_id: voteParams.recipe_id,
-        rating_stars: voteParams.newStars
+        rating_stars: voteParams.new_stars
       }).save();
     } else if (voteParams.prevVoteValue) {
-      const newRatingStars = ((ratingStars * reviewCount) - voteParams.prevVoteValue + voteParams.newStars) / reviewCount;
+      const newRatingStars = ((rating_stars * reviewCount) - voteParams.prevVoteValue + voteParams.new_stars) / reviewCount;
+      console.log("Update vote");
 
       const newRecipe = {
         ...recipe,
@@ -265,10 +268,12 @@ export class RecipeResolver {
       }
       const newVoteStatus = {
         ...voteStatus,
-        ratingStars: voteParams.newStars
+        rating_stars: voteParams.new_stars
       };
 
       Object.assign(voteStatus, newVoteStatus);
+      console.log(voteStatus);
+
       voteStatus.save();
     }
     return true;

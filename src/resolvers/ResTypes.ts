@@ -111,7 +111,7 @@ export class VoteParams {
   recipe_id!: number;
 
   @Field()
-  newStars!: number;
+  new_stars!: number;
 
   @Field()
   prevVote!: boolean;
