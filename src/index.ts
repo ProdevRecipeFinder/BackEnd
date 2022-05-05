@@ -10,6 +10,7 @@ import { buildSchema } from "type-graphql";
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader";
 import { createConnection, getConnection } from "typeorm";
 import { COOKIE_NAME, IMAGE_UPLOAD_PREFIX, ONE_DAY, __prod__ } from "./constants";
+import { loadDb } from './DatabaseLoader/loadDB';
 import { SearchResolver } from './resolvers/ft_search/searchRes';
 import { RecipeResolver } from "./resolvers/RecipeRes";
 import { UserResolver } from "./resolvers/UserRes";
@@ -30,7 +31,7 @@ const main = async () => {
   //Auto-run all pending migrations
   await conn.runMigrations();
 
-  // await loadDb();
+  await loadDb();
 
   //Express back-end server
   const app = express();

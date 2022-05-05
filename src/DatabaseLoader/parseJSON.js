@@ -1,5 +1,5 @@
 const fs = require( "fs" );
-const rawData = fs.readFileSync( "allrecipes-recipes.json" );
+const rawData = fs.readFileSync( '../../allrecipes-recipes.json' );
 
 const lines = rawData.toString().split( "\n" );
 const output = { "data": [] };
@@ -79,7 +79,7 @@ function getInstructionsData ( instructionsData ) {
 lines.forEach( bruh => {
     const line = JSON.parse( bruh );
 
-    if ( line.cook_time_minutes !== 0 && line.prep_time_minutes !== 0 && line.total_time_minutes !== 0 ) {
+    if ( line.cook_time_minutes !== 0 && line.prep_time_minutes !== 0 && line.total_time_minutes !== 0 && !line.photo_url.includes( 'nophoto/nopicture' ) ) {
 
         const balls = {
             "recipe_title": line[ "title" ],

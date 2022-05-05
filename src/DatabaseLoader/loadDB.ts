@@ -6,13 +6,13 @@ import { Step } from "../entities/Step";
 import { DatabaseInput } from "./types";
 
 
-const db = require('../../../output.json');
+const db = require('./output.json');
 
 export const loadDb = async () => {
 
   const recipes: Array<DatabaseInput> = db["data"];
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < recipes.length; i++) {
     await addRecipe(recipes[i]);
     console.log(recipes[i]);
 
